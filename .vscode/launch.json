@@ -1,0 +1,94 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "totvs_language_debug",
+			"request": "launch",
+			"name": "TOTVS Language Debug",
+			"program": "${command:AskForProgramName}",
+			"cwb": "${workspaceFolder}",
+			"smartclientBin": "C:/TOTVS.PROTHEUS/Protheus/Protheus/bin/SMARTCLIENT_Petinho/smartclient.exe",
+			"isMultiSession": true,
+			"enableTableSync": true,
+			"enableMultiThread": true
+		}
+	],
+	"lastPrograms": [
+		{
+			"label": "SIGAGFE"
+		},
+		{
+			"label": "VlrSALDO"
+		},
+		{
+			"label": "U_VlrSALDO"
+		},
+		{
+			"label": "U_FINF002"
+		},
+		{
+			"label": "SIGAFIN"
+		},
+		{
+			"label": "SIGAFAT"
+		},
+		{
+			"label": "SIGAmdi"
+		},
+		{
+			"label": "U_cadBeeHo"
+		},
+		{
+			"label": "U_DemissionBeeHo"
+		},
+		{
+			"label": "U_StatusAlt"
+		},
+		{
+			"label": "U_cadSolid"
+		},
+		{
+			"label": "U_testexrt"
+		},
+		{
+			"label": "Pedvenda"
+		},
+		{
+			"label": "U_testerest"
+		},
+		{
+			"label": "apsdu"
+		},
+		{
+			"label": "sigaest"
+		},
+		{
+			"label": "U_getstatus"
+		},
+		{
+			"args": [
+				"000767"
+			],
+			"label": "U_getstatus"
+		},
+		{
+			"label": "U_import"
+		},
+		{
+			"label": "Sigaoms"
+		},
+		{
+			"label": "U_bbpix"
+		},
+		{
+			"label": "U_jobStatus"
+		},
+		{
+			"label": "U_teste12234"
+		},
+		{
+			"label": "U_getcliente"
+		}
+	],
+	"lastProgramExecuted": "U_getcliente"
+}
