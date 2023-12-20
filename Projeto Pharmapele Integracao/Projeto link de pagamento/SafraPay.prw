@@ -8,7 +8,8 @@
 #Define cMercTk "mk_78Zx4h7YgkaBWtBIsvLyvg"
 #Define cIdCli "e271c6ef-d81e-4682-815a-d048b2f2f2be"
 
-/*+------------------------------------------------------------------------+
+/*
+*+-------------------------------------------------------------------------+
 *|Funcao      | SafraPay()                                                 |
 *+------------+------------------------------------------------------------+
 *|Autor       | Rivaldo Jr. ( Cod.ERP Tecnologia LTDA )                    |
@@ -20,14 +21,21 @@
 *|Solicitante | Setor financeiro                                           |
 *+------------+------------------------------------------------------------+
 *|Partida     | REST                                                       |
-*+------------+-----------------------------------------------------------*/
-User Function SafraPay(nValor, cContato, cEmail)
+*+------------+------------------------------------------------------------+
+*/
+User Function SafraPay(nOpcao, nValor, cContato, cEmail, cIdLink)
     Local aDados     := {}
+    Default nOpcao   := 1
     Default nValor   := 1
     Default cContato := "81999999999"
-    Default cEmail   := "pharmapele@gmail.com"
+    Default cEmail   := "rivaldo.junior@coderp.inf.br"
+    Default cIdLink  := ""
 
-    aDados := GeraLink(nValor, cContato, cEmail)
+    If nOpcao == 1
+        aDados := GeraLink(nValor, cContato, cEmail)
+    Else
+        aDados := DetLink(cIdLink)
+    Endif
 
 Return aDados
 
@@ -55,8 +63,8 @@ Static Function GeraToken()
     oRest:Post(aHeader)
     cErro := oJSon:fromJson(oRest:GetResult())
 
-    If !oJson["success"]
-        //FWAlertWarning(cErro,"JSON PARSE ERROR")
+    If !empty(cErro)
+        FWAlertWarning(cErro,"JSON PARSE ERROR")
         Return ""
     Endif
 
@@ -83,7 +91,6 @@ Static Function GeraLink(nValor, cContato, cEmail)
     Local cPath      := "/v2/paymentlink"
     Local cContent   := "Content-Type: application/json"
     Local cJsonBody  := ""
-    Local cValor     := Val(StrTran(StrTran(AllTrim(Transform(nValor, "@E 999,999,999.99")),',',''),'.',''))
 
     Aadd(aHeader, cAuth         )
     Aadd(aHeader, cContent      )
@@ -92,10 +99,10 @@ Static Function GeraLink(nValor, cContato, cEmail)
     oJson := JSonObject():New()
 
     cJsonBody:= '{ '
-    cJsonBody+=     '"amount": '+cValor+','
+    cJsonBody+=     '"amount": "'+cValToChar(nValor)+'",'
     cJsonBody+=     '"description": "LinkPagamento Pharmapele",'
     cJsonBody+=     '"emailNotification": "'+cEmail+'",' // Email Padrão do cliente
-    cJsonBody+=     '"phoneNotification": "'+cContato+'" '
+    cJsonBody+=     '"phoneNotification": "'+cContato+'",'
     cJsonBody+= '} '
 
     oRest:setPath(cPath)
@@ -103,8 +110,8 @@ Static Function GeraLink(nValor, cContato, cEmail)
     oRest:Post(aHeader)
     cErro := oJSon:fromJson(oRest:GetResult())
 
-    If !oJson["success"]
-        //MsgStop(cErro,"JSON PARSE ERROR")
+    If !empty(cErro)
+        MsgStop(cErro,"JSON PARSE ERROR")
         Return {}
     Endif
 
@@ -112,3 +119,44 @@ Static Function GeraLink(nValor, cContato, cEmail)
     cIdLink   := oJson:GetJSonObject('id')
 
 Return { cIdLink, cLinkPag }
+
+
+/**********************************************************************************
+*+-------------------------------------------------------------------------------+*
+*|Funcao      | DetLink    | Autor |    Rivaldo Jr.  ( Cod.ERP )                 |*
+*+------------+------------------------------------------------------------------+*
+*|Data        | 29.09.2023                                                       |*
+*+------------+------------------------------------------------------------------+*
+*|Descricao   | Funcao para buscar os detalhes de um link de pagamento           |*
+*+------------+------------------------------------------------------------------+*
+*|Parâmetro   | Necessita do ID do link de pagamento                             |*
+**********************************************************************************/
+Static Function DetLink(cIdLink)
+    Local cAuth          := "Authorization: " + Encode64(GeraToken())
+    Local cMerchant      := "MerchantId: "+cIdCli // Id do cliente
+    Local nStatus        := 0
+    Local aHeader        := {}
+    Local oRest      As Object
+    Local oJson      As Object
+
+    oRest := FWRest():New(cUrlPortal)
+    oJson := JSonObject():New()
+
+    Aadd(aHeader, cAuth)
+    Aadd(aHeader, cMerchant)
+
+    oRest:setPath("/v1/smartcheckout/"+cIdLink+"/detail")
+    oRest:GET(aHeader)
+    cErro := oJSon:fromJson(oRest:GetResult())
+
+    If !empty(cErro)
+      FWAlertWarning(cErro,"JSON PARSE ERROR")
+      Return ""
+    Endif
+
+    nStatus := oJson:GetJSonObject('status')
+
+Return {nStatus}
+
+
+

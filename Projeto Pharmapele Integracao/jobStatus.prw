@@ -10,25 +10,39 @@
 #Define cUrlCielo "https://cieloecommerce.cielo.com.br"
 #Define cClientID "f72ff94d-da2b-48a5-bdb8-5ef92f4ed354"
 #Define cClientSC "iOSbQOKiHzExAvtwfKrWhofBQ+YpyDkBWLHO5UTa6EE="
+#Define nIdTag '146041'
 
-User function jobStatus()
-	Local cAlias         := GetNextAlias()
+/*+------------------------------------------------------------------------+
+*|Funcao      | JobStatus()                                                |
+*+------------+------------------------------------------------------------+
+*|Autor       | Rivaldo Jr. ( Cod.ERP Tecnologia LTDA )                    |
+*+------------+------------------------------------------------------------+
+*|Data        | 17/10/2023                                                 |
+*+------------+------------------------------------------------------------|
+*|Descricao   | Verifica e atualiza o status do resgistro do link de pag.  |
+*+------------+------------------------------------------------------------+
+*|Solicitante | Setor financeiro                                           |
+*+------------+-----------------------------------------------------------*/
+User function JobStatus(aParam)
+	Local cAlias     := GetNextAlias()
     Private lAtivAmb := .T.
 	// Prepara o ambiente caso precise
+
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType(3)
-		RpcSetEnv( "01",'0101', , , "",,, , , ,  )
+		RpcSetEnv( aParam[1],aParam[2], , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
-    cQuery := " SELECT * FROM "+RetSqlName("ZLP")+" WHERE R_E_C_N_O_ <> R_E_C_D_E_L_  AND ZLP_STATUS = 1 AND ZLP_CODLP = '000112'"
+
+    cQuery := " SELECT * FROM "+RetSqlName("ZLP")+" WHERE R_E_C_N_O_ <> R_E_C_D_E_L_  AND ZLP_STATUS = 1 "//AND ZLP_CODLP = '000112'"
     MpSysOpenQuery(cQuery, cAlias)
     
 	while (cAlias)->(!EOF())
-		If (cAlias)->ZLP_BANCO == "2"
-			DetLink((cAlias)->ZLP_FILIAL+(cAlias)->ZLP_CODLP,AllTrim((cAlias)->ZLP_IDLINK))
-		ElseIf (cAlias)->ZLP_BANCO == "1"
-			DLinkCielo((cAlias)->ZLP_FILIAL+(cAlias)->ZLP_CODLP,AllTrim((cAlias)->ZLP_IDLINK))
+		If (cAlias)->ZLP_BANCO == "2" //SafraPay
+			DtLinkSafra((cAlias)->ZLP_FILIAL+(cAlias)->ZLP_CODLP,AllTrim((cAlias)->ZLP_IDLINK),(cAlias)->ZLP_IDCHAT)
+		ElseIf (cAlias)->ZLP_BANCO == "1" //Cielo
+			DtLinkCielo((cAlias)->ZLP_FILIAL+(cAlias)->ZLP_CODLP,AllTrim((cAlias)->ZLP_IDLINK),(cAlias)->ZLP_IDCHAT)
 		EndIf
 		(cAlias)->(DbSkip())
 	End
@@ -41,7 +55,7 @@ Return
 
 /**********************************************************************************
 *+-------------------------------------------------------------------------------+*
-*|Funcao      | DetLink    | Autor |    Rivaldo Jr.  ( Cod.ERP )                 |*
+*|Funcao      | DtLinkSafra    | Autor |    Rivaldo Jr.  ( Cod.ERP )             |*
 *+------------+------------------------------------------------------------------+*
 *|Data        | 29.09.2023                                                       |*
 *+------------+------------------------------------------------------------------+*
@@ -49,8 +63,8 @@ Return
 *+------------+------------------------------------------------------------------+*
 *|Parâmetro   | Necessita do ID do link de pagamento                             |*
 **********************************************************************************/
-Static Function DetLink(cfiltro,cidlink)
-    Local cAuth          := "Authorization: " + GeraToken()
+Static Function DtLinkSafra(cfiltro,cidlink,cIdChat)
+    Local cAuth          := "Authorization: " + GTkSafra()
     Local cMerchant      := "MerchantId: "+cIdCli // Id do cliente
     Local aHeader        := {}
     Local oRest      As Object
@@ -63,16 +77,20 @@ Static Function DetLink(cfiltro,cidlink)
     oRest:setPath("/v1/smartcheckout/"+cidlink+"/detail")
     oRest:GET(aHeader)
     cErro := oJSon:fromJson(oRest:GetResult())
-    if Empty(cErro)
-        if oJson['smartCheckout']['charges'][1]['transactions'][1]['transactionStatus'] == 8
-            ZLP->(dbSeek(cfiltro))
-            Reclock('ZLP',.F.)
-            ZLP->STATUS := 2
-            ZLP->(MsUnLock())
-        ElseIf oJson['smartCheckout']['charges'][1]['transactions'][1]['transactionStatus'] == 10
-            ZLP->(dbSeek(cfiltro))
-            Reclock('ZLP',.F.)
-            ZLP->STATUS := 3
+    If Empty(cErro)
+        If ZLP->(dbSeek(cfiltro))
+            ZLP->(Reclock('ZLP',.F.))
+                If Len(oJson['smartCheckout']['charges']) > 0
+                    If Len(oJson['smartCheckout']['charges'][1]['transactions']) > 0
+                        If oJson['smartCheckout']['charges'][1]['transactions'][1]['transactionStatus'] == 8
+                            ZLP->ZLP_STATUS := '2' //Link Pago
+                            U_AddTag(nIdTag,cIdChat)
+                            U_RetTB(ZLP->ZLP_CODLP)
+                        ElseIf oJson['smartCheckout']['charges'][1]['transactions'][1]['transactionStatus'] == 10
+                            ZLP->ZLP_STATUS := '3' //Link Expirado
+                        EndIf
+                    EndIf
+                EndIf
             ZLP->(MsUnLock())
         EndIf
     EndIf
@@ -81,7 +99,7 @@ Return
 
 /**********************************************************************************
 *+-------------------------------------------------------------------------------+*
-*|Funcao      | DetLink    | Autor |    Rivaldo Jr.  ( Cod.ERP )                 |*
+*|Funcao      | DtLinkCielo    | Autor |    Rivaldo Jr.  ( Cod.ERP )             |*
 *+------------+------------------------------------------------------------------+*
 *|Data        | 29.09.2023                                                       |*
 *+------------+------------------------------------------------------------------+*
@@ -89,49 +107,46 @@ Return
 *+------------+------------------------------------------------------------------+*
 *|Parâmetro   | Necessita do ID do link de pagamento                             |*
 **********************************************************************************/
-Static Function DLinkCielo(cfiltro,cIdLink)
-    Local cAuth          := "Authorization: " + GTokenCielo()
+Static Function DtLinkCielo(cfiltro,cIdLink,cIdChat)
+    Local cAuth          := "Authorization: " + GTkCielo()
     Local cPath          := "/api/public/v1/products/" + cIdLink +"/payments"
     Local nStatus        := 0
     Local cErro          := ''
     Local aHeader        := {}
     Local oRest          := FWRest():New(cUrlCielo)
     Local oJson          := JSonObject():New()
-
     Aadd(aHeader, cAuth)
-
     oRest:setPath(cPath)
     oRest:Get(aHeader)
     cErro := oJSon:fromJson(oRest:GetResult())
-    if Empty(cErro)
-        if oJson['orders'][1]['payment']['status'] == 'Paid'
-            ZLP->(dbSeek(cfiltro))
-            Reclock('ZLP',.F.)
-            ZLP->STATUS := 2
-            ZLP->(MsUnLock())
-        ElseIf oJson['orders'][1]['payment']['status'] == 'Expired'
-            ZLP->(dbSeek(cfiltro))
-            Reclock('ZLP',.F.)
-            ZLP->STATUS := 3
+    If Empty(cErro)
+        If ZLP->(dbSeek(cfiltro))
+            ZLP->(Reclock('ZLP',.F.))
+                If Len(oJson['orders']) > 0 
+                    If oJson['orders'][1]['payment']['status'] == 'Paid'
+                        ZLP->ZLP_STATUS := '2' //Link Pago
+                        U_AddTag(nIdTag,cIdChat)
+                        U_RetTB(ZLP->ZLP_CODLP)
+                    ElseIf oJson['orders'][1]['payment']['status'] == 'Expired'
+                        ZLP->ZLP_STATUS := '3' //Link Expirado
+                    EndIf
+                EndIf
             ZLP->(MsUnLock())
         EndIf
     EndIf
-
 Return nStatus
 
 /**********************************************************************************
 *+-------------------------------------------------------------------------------+*
-*|Funcao      | DetLink    | Autor |    Rivaldo Jr.  ( Cod.ERP )                 |*
+*|Funcao      | GTkSafra    | Autor |    Rivaldo Jr.  ( Cod.ERP )                |*
 *+------------+------------------------------------------------------------------+*
 *|Data        | 29.09.2023                                                       |*
 *+------------+------------------------------------------------------------------+*
-*|Descricao   | Funcao para buscar os detalhes de um link de pagamento           |*
+*|Descricao   | Funcao para buscar o token                                       |*
 *+------------+------------------------------------------------------------------+*
-*|Parâmetro   | Necessita do ID do link de pagamento                             |*
 **********************************************************************************/
 
-Static Function GeraToken()
-
+Static Function GTkSafra()
     Local cGeneratedToken  := ''
     Local cErro            := ''
     Local oRest            As Object
@@ -152,16 +167,15 @@ Return "Bearer " + cGeneratedToken
 
 /**********************************************************************************
 *+-------------------------------------------------------------------------------+*
-*|Funcao      | DetLink    | Autor |    Rivaldo Jr.  ( Cod.ERP )                 |*
+*|Funcao      | GTkCielo    | Autor |    Rivaldo Jr.  ( Cod.ERP )                |*
 *+------------+------------------------------------------------------------------+*
 *|Data        | 29.09.2023                                                       |*
 *+------------+------------------------------------------------------------------+*
-*|Descricao   | Funcao para buscar os detalhes de um link de pagamento           |*
+*|Descricao   | Funcao para buscar o token                                       |*
 *+------------+------------------------------------------------------------------+*
-*|Parâmetro   | Necessita do ID do link de pagamento                             |*
 **********************************************************************************/
 
-Static Function GTokenCielo()
+Static Function GTkCielo()
     Local cToken           := ''
     Local cTkType          := ''
     Local cErro            := ''

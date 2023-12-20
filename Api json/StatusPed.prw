@@ -114,7 +114,9 @@ User Function GetStatus(cPedido)
 			TMP->(DbSkip())
 		EndDo
 	Else
-		SetRestFault(404,'Pedido: "'+cPedido+'",Status: Nao encontrado ',.T.)
+		oBody['Code'] :=  404
+		oBody['pedido'] := cPedido
+		oBody['status'] := 'pedido não encontrado'
 	EndIf
 // Se montou o ambiente, desmonta
 	If lAtivAmb

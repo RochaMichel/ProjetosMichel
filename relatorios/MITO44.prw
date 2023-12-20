@@ -2,7 +2,7 @@
 #Include "TopConn.Ch"
 #Include "Font.Ch"
 #Include "Colors.Ch"
-
+ 
 
 /*
 ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
@@ -35,15 +35,15 @@ User Function MITO44()
 	EndIf
 
 	If MV_PAR02 == "Etiq_25x75"
-		Processa( { || U_Etiq25x75(MV_PAR01, MV_PAR03) }, "Imprimindo etiquetas..." )
+		 U_Etiq25x75(MV_PAR01, MV_PAR03)
 	ElseIf MV_PAR02 == "Etiq_210x100"
-		Processa( { || U_Etiq210x100(MV_PAR01, MV_PAR03) }, "Imprimindo etiquetas..." )
+	     U_Etiq210x100(MV_PAR01, MV_PAR03)
 	ElseIf MV_PAR02 == "Etiq_250x100"
-	   U_Etiq250x100(MV_PAR01, MV_PAR03)
+	     U_Etiq250x100(MV_PAR01, MV_PAR03)//feito
 	ElseIf MV_PAR02 == "Etiq_125x100"
-	   U_Etiq125x100(MV_PAR01, MV_PAR03)
+	     U_Etiq125x100(MV_PAR01, MV_PAR03)//feito
 	ElseIf MV_PAR02 == "Etiq_125x100_2"
-		Processa( { || U_Et25x100_2(MV_PAR01, MV_PAR03) }, "Imprimindo etiquetas..." )
+         U_Et25x100_2(MV_PAR01, MV_PAR03) 
 	EndIf
 
 Return
@@ -374,26 +374,26 @@ User Function Etiq125x100(cProduto,nQtde)
 		MSCBBEGIN(1,6) //Inicia impressão 1º Eti	02queta
 
 		//Codigo do Produto
-		MSCBBOX(04,45,50,80)
+		MSCBBOX(04,51,51,71)
 		//If len(cDesc) > 27
-			MSCBSAY(030,070,SubStr(cDesc,1,10),"I",cFonte    ,"25")
-			MSCBSAY(030,060,SubStr(cDesc,10,25),"I",cFonte    ,"25")
+			MSCBSAY(010,064,SubStr(cDesc,1,18),"I",cFonte    ,"25")
+			MSCBSAY(010,057,SubStr(cDesc,19,17),"I",cFonte    ,"25")
 		//Else
 		//	MSCBSAY(062,015,cDesc,"I",cFonte    ,"30")
 		//EndIf
 		
 		aMsgPre := U_RetMemu(SB1->B1_COD,SBM->BM_XMSGPER)
-		ntam := 035
+		ntam := 30
 		For n := 1 to len(aMsgPre)
-		MSCBSAY( nTam,015,aMsgPre[n],   "I"      ,cFonte    ,cTamX)
+		MSCBSAY(52,nTam,aMsgPre[n],   "I"      ,cFonte    ,cTamX)
 		nTam -= 005
 		Next		
-		MSCBSAY( nTam,80,"Lote: "+MV_PAR02,   "I"      ,cFonte    ,cTamX)
+		MSCBSAY( 69,25,"Lote: "+MV_PAR02,   "I"      ,cFonte    ,cTamX)
 		//MSCBSAY( 010,nTam+005,"Data De Fabricação: "+DtoC(SB8->B8_DATA),   "I"      ,cFonte    ,cTamX)
-		MSCBSAY( nTam+5,42,"Data De Fabricação: "+DtoC(DDATABASE),   "I"      ,cFonte    ,cTamX)
-		MSCBSAY( nTam+15,50,"Prazo De Validade: 01 ano",   "I"      ,cFonte    ,cTamX)
+		MSCBSAY( 25,20,"Data De Fabricação: "+DtoC(DDATABASE),   "I"      ,cFonte    ,cTamX)
+		MSCBSAY( 35,15,"Prazo De Validade: 01 ano",   "I"      ,cFonte    ,cTamX)
 		//MSCBSAY( 010,nTam+010,"Prazo De Validade: "+cValtoChar(DateDiffYear(SB8->B8_DATA,SB8->B8_DTVALID))+IIF(DateDiffYear(SB8->B8_DATA,SB8->B8_DTVALID)>1," anos"," ano"),   "I"      ,cFonte    ,cTamX)
-		MSCBSAY( nTam+20,60,"Peso Liquido "+MV_PAR03+"kg","I",cFonte                                                ,cTamX)
+		MSCBSAY( 51,10,"Peso Liquido "+MV_PAR03+"kg","I",cFonte                                                ,cTamX)
 
 		MSCBEND() //Finaliza impressão 1º pag.
 

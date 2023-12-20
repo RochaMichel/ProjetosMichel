@@ -201,7 +201,7 @@ user function testerest()
 	Next n
 	cResposta += ' ]}'
 	If !Empty(cTexto)
-		SetRestFault(400,cTexto,.T.)
+		::SetResponse(cTexto)
 		lRet := .F.                                     
 	Else
 		::SetResponse(cResposta)

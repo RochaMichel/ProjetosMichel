@@ -5,8 +5,7 @@
 #Define cUrl   "https://api.chat24.io"
 #Define cToken "f357c34cf5dce08a3434feeb2d25e8"
 
-/*
-*+-------------------------------------------------------------------------+
+/*+------------------------------------------------------------------------+
 *|Funcao      | Chat2Desk()                                                |
 *+------------+------------------------------------------------------------+
 *|Autor       | Rivaldo Jr. ( Cod.ERP Tecnologia LTDA )                    |
@@ -18,24 +17,22 @@
 *|Solicitante | Setor financeiro                                           |
 *+------------+------------------------------------------------------------+
 *|Partida     | REST                                                       |
-*+------------+------------------------------------------------------------+
-*/
-User Function Chat2Desk(cContato, cNome, cMensagem)
+*+------------+-----------------------------------------------------------*/
+User Function Chat2Desk(cContato, cIdOper, cMensagem)
     Local cID     := ""
     Local cStatus := ""
 
     cID := ConsultaCli(cContato)
 
-    If Empty(cID)
-        cID := CadastraCli(cContato, cNome)
+    If !Empty(cID)
+       // cID := CadastraCli(cContato, cNome)
+    cStatus := Mensagem(cID,cIdOper,cMensagem)
     EndIf
 
-    cStatus := Mensagem(cID, cMensagem)
 
 Return cStatus
 
-/*
-*+-------------------------------------------------------------------------+
+/*+------------------------------------------------------------------------+
 *|Funcao      | ConsultaCli()                                              |
 *+------------+------------------------------------------------------------+
 *|Autor       | Rivaldo Jr. ( Cod.ERP Tecnologia LTDA )                    |
@@ -47,8 +44,7 @@ Return cStatus
 *|Solicitante | Setor financeiro                                           |
 *+------------+------------------------------------------------------------+
 *|Partida     | REST                                                       |
-*+------------+------------------------------------------------------------+
-*/
+*+------------+-----------------------------------------------------------*/
 Static Function ConsultaCli(cContato)
     Local cAuth          := "Authorization: " + cToken
     Local cPath          := "/v1/clients?phone=" + cContato
@@ -66,7 +62,7 @@ Static Function ConsultaCli(cContato)
     cErro := oJSon:fromJson(oRest:GetResult())
 
     If !empty(cErro)
-        FWAlertWarning(cErro,"JSON PARSE ERROR")
+        //FWAlertWarning(cErro,"JSON PARSE ERROR")
         Return ""
     Endif
     
@@ -77,8 +73,7 @@ Static Function ConsultaCli(cContato)
 Return cId
 
 
-/*
-*+-------------------------------------------------------------------------+
+/*+------------------------------------------------------------------------+
 *|Funcao      | CadastraCli()                                              |
 *+------------+------------------------------------------------------------+
 *|Autor       | Rivaldo Jr. ( Cod.ERP Tecnologia LTDA )                    |
@@ -90,8 +85,7 @@ Return cId
 *|Solicitante | Setor financeiro                                           |
 *+------------+------------------------------------------------------------+
 *|Partida     | REST                                                       |
-*+------------+------------------------------------------------------------+
-*/
+*+------------+-----------------------------------------------------------*/
 Static Function CadastraCli(cContato, cNome)
     Local cAuth          := "Authorization: " + cToken
     Local cContent       := "Content-Type: application/json"
@@ -119,7 +113,7 @@ Static Function CadastraCli(cContato, cNome)
     cErro := oJSon:fromJson(oRest:GetResult())
 
     If !empty(cErro)
-        FWAlertWarning(cErro,"JSON PARSE ERROR")
+        //FWAlertWarning(cErro,"JSON PARSE ERROR")
         Return ""
     Endif
     
@@ -127,9 +121,8 @@ Static Function CadastraCli(cContato, cNome)
 
 Return cId
 
-/*
-*+-------------------------------------------------------------------------+
-*|Funcao      | Mensagem()                                              |
+/*+------------------------------------------------------------------------+
+*|Funcao      | Mensagem()                                                 |
 *+------------+------------------------------------------------------------+
 *|Autor       | Rivaldo Jr. ( Cod.ERP Tecnologia LTDA )                    |
 *+------------+------------------------------------------------------------+
@@ -140,14 +133,14 @@ Return cId
 *|Solicitante | Setor financeiro                                           |
 *+------------+------------------------------------------------------------+
 *|Partida     | REST                                                       |
-*+------------+------------------------------------------------------------+
-*/
-Static Function Mensagem(cID, cMensagem)
+*+------------+-----------------------------------------------------------*/
+Static Function Mensagem(cID,cIdOper,cMensagem)
     Local cAuth          := "Authorization: " + cToken
     Local cContent       := "Content-Type: application/json"
     Local cPath          := "/v1/messages"
     Local aHeader        := {}
     Local cStatus        := ""
+    Local cIdChat        := ""
     Local cJson          := ""
     Local oRest          := FWRest():New(cUrl)
     Local oJson          := JSonObject():New()
@@ -155,12 +148,13 @@ Static Function Mensagem(cID, cMensagem)
     Aadd(aHeader, cAuth)
     Aadd(aHeader, cContent)
 
-    cJson += '{'
-    cJson += '"client_id": ' + cID + ','
-    cJson += '"text": "' + cMensagem + '",'
-    cJson += '"type": "to_client",'
-    cJson += '"transport": "external",'
-    cJson += '"channel_id": 58547'
+    cJson += '{ '
+    cJson += '"client_id": ' + cID + ', '
+    cJson += '"text": "' + cMensagem + '", '
+    cJson += '"type": "to_client", '
+    cJson += '"transport": "external", '
+    cJson += '"channel_id": 58547, '
+    cJson += '"operator_id": '+cIdOper+' '
     cJson += '}'
 
     oRest:setPath(cPath)
@@ -170,59 +164,11 @@ Static Function Mensagem(cID, cMensagem)
     cErro := oJSon:fromJson(oRest:GetResult())
 
     If !empty(cErro)
-        FWAlertWarning(cErro,"JSON PARSE ERROR")
-        Return ""
+        //FWAlertWarning(cErro,"JSON PARSE ERROR")
+        Return {}
     Endif
     
     cStatus := oJson:GetJSonObject('status')
+    cIdChat := oJson["data"]["request_id"]
 
-Return cStatus
-
-Static Function Operador(id_operator,id_mensagem)
-    Local cAuth          := "Authorization: " + cToken
-    Local cPath          := "/v1/messages/"+id_mensagem+"/transfer?operator_id="+id_operator
-    Local aHeader        := {}
-    Local oRest          := FWRest():New(cUrl)
-    Local oJson          := JSonObject():New()
-
-    Aadd(aHeader, cAuth)
-
-    oRest:setPath(cPath)
-    oRest:GET(aHeader)
-    cErro := oJSon:fromJson(oRest:GetResult())
-
-    If !empty(cErro)
-        FWAlertWarning(cErro,"JSON PARSE ERROR")
-        Return ""
-    Endif
-return
-
-User Function tags(Id_tag,id_cliente)
-    Local cAuth          := "Authorization: " + cToken
-    Local cContent       := "Content-Type: application/json"
-    Local cPath          := "/v1/tags/assign_to"
-    Local aHeader        := {}
-    Local cJson          := ""
-    Local oRest          := FWRest():New(cUrl)
-    Local oJson          := JSonObject():New()
-
-    Aadd(aHeader, cAuth)
-    Aadd(aHeader, cContent)
-
-    cJson += '{'
-    cJson += '"tag_ids": ['+Id_tag+'],'
-    cJson += '"assignee_type": "cliente",'
-    cJson += '"assignee_id": "'+id_cliente+'",'
-    cJson += '}'
-
-    oRest:setPath(cPath)
-    oRest:SetPostParams(cJson)
-    oRest:POST(aHeader)
-
-    cErro := oJSon:fromJson(oRest:GetResult())
-
-    If !empty(cErro)
-        FWAlertWarning(cErro,"JSON PARSE ERROR")
-        Return ""
-    Endif
-return
+Return {cStatus, cIdChat}

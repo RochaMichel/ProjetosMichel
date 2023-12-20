@@ -17,20 +17,27 @@
 *|Partida     | REST                                                       |
 *+------------+------------------------------------------------------------+
 
-User Function ConsRest(nValor, lGeraNov, nParc )
+User Function ConsRest(oModel, lGeraNov)
     Local lGerou  := .F.
     Local aDados  := {}
-    Default nParc := '1'
+    Local oCab	  := Iif(lGeraNov,nil,oModel:GetModel("ZLPMASTER"))
+    Local oTotal  := Iif(lGeraNov,nil,oModel:GetModel("TOT_SALDO"))
+    Local nOpcao  := 1
+    Local nValor  := Iif(lGeraNov,ZLP->ZLP_VALOR,oTotal:GetValue("XX_TOTAL"))
+    Local cContato:= Iif(lGeraNov,ZLP->ZLP_CONTCL,oCab:GetValue("ZLP_CONTCL"))
+    Local cEmail  := "rivaldogfj@hotmail.com"
+    Local cIdLink := ''
+    Local nParc   := '1'
 
     * VERIFICO QUAL BANCO FOI SELECIONADO PARA GERAR O LINK *
     Do Case
         Case Iif(lGeraNov,ZLP->ZLP_BANCO,FWFldGet('ZLP_BANCO')) == '1' //CIELO
 
-            aDados := U_Cielo( nValor,nParc )
+            aDados := U_Cielo(nOpcao, nValor, cContato, cEmail, cIdLink, nParc)
 
         Case Iif(lGeraNov,ZLP->ZLP_BANCO,FWFldGet('ZLP_BANCO')) == '2' //SAFRAPAY
 
-            aDados := U_SafraPay( nValor )
+            aDados := U_SafraPay(nOpcao, nValor, cContato, cEmail, cIdLink, nParc)
 
         Case Iif(lGeraNov,ZLP->ZLP_BANCO,FWFldGet('ZLP_BANCO')) == '3' //PAGSEGURO
 
@@ -47,7 +54,9 @@ User Function ConsRest(nValor, lGeraNov, nParc )
             ZLP->ZLP_HORA   := Time()   
             ZLP->ZLP_STATUS := '1'      
         ZLP->(MsUnlock())
-
+        
+    else
+        FwAlertWarning(cValToChar(aDados),"Atenção!")
     EndIf
 
 Return lGerou

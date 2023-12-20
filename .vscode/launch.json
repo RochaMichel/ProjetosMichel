@@ -88,7 +88,19 @@
 		},
 		{
 			"label": "U_getcliente"
+		},
+		{
+			"label": "sigacfg"
+		},
+		{
+			"args": [
+				"00000"
+			],
+			"label": "U_getstatus"
+		},
+		{
+			"label": "sigaatf"
 		}
 	],
-	"lastProgramExecuted": "U_getcliente"
+	"lastProgramExecuted": "SIGAmdi"
 }
