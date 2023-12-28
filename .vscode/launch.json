@@ -100,7 +100,11 @@
 		},
 		{
 			"label": "sigaatf"
+		},
+		{
+			"label": "U_MailPonto"
 		}
 	],
-	"lastProgramExecuted": "SIGAmdi"
+	"lastProgramExecuted": "<cancel>",
+	"lastProgramArguments": []
 }
