@@ -26,18 +26,22 @@ User Function MT100AGR()
 	Local nQtde    := 0
 	Local i        := 0
 	Local cProduto := ""
+	Local cGrupo := ""
 	Local cLocal   := ""
 	local cAlias := GetNextAlias()
 
 	IF INCLUI
 		aRetAp   := RtItensD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
-		//If SF1->F1_XBASESC == '1'
+		cGrupo := posicione("sb1",1,xfilial("sb1")+aretAp[1][1],"B1_GRUPO")
+		If Alltrim(cGrupo) == GetMv('MV_XGPBASE',,'002')
+			//If SF1->F1_XBASESC == '1'
 			nPesoBR  := SF1->F1_PBRUTO
 			aRet     := RetQtdeD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
 			cProduto := aRet[1]
 			cLocal   := aRet[2]
 			nQtde    := aRet[3]
-			U_BaseSeca(cProduto, cLocal, nQtde, nPesoBR)
+			U_BaseSeca(SF1->F1_DOC,cProduto, cLocal, nQtde, nPesoBR)
+		EndIf
 		//EndIf
 		For i := 1 to len(aRetAp)
 			BeginSql Alias cAlias

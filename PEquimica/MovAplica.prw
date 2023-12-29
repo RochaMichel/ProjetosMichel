@@ -12,7 +12,7 @@ User Function MovAplica(cProduto, cLocal, nQtdAj)
 
     Private lMsErroAuto := .f. //necessario a criacao
 
-    aCab := {{"D3_DOC"     , NextNumero("SD3",2,"D3_DOC",.T.) , NIL},;
+    aCab := {{"D3_DOC"     , GetSxeNum("SD3","D3_DOC") , NIL},;
              {"D3_TM"      , cCodTM                           , NIL},;
              {"D3_EMISSAO" , dDataBase                        , NIL}}
 
