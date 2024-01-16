@@ -25,7 +25,6 @@ Local oBody
 Local cJson
 If nPosCod > 0
 	cCodigo := Self:AQueryString[nPosCod][2]
-
 EndIf
 oBody       := u_GetVeiculos(cCodigo)
 cJson           := oBody:toJson()
@@ -64,7 +63,7 @@ User Function GetVeiculos(cCodigo)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
@@ -88,6 +87,9 @@ User Function GetVeiculos(cCodigo)
 //AADD(aCampos,"" ) //cap_carga_peso                 
 //AADD(aCampos,"B1_PESBRU" ) //tap_mts_cubicos                 
 	AADD(aCampos,"DA3_TIPVEI" ) //tipo_veiculo
+	AADD(aCampos,"DA3_CAPACN" ) //tipo_veiculo
+	AADD(aCampos,"DA3_CAPACM" ) //tipo_veiculo
+	AADD(aCampos,"DA3_VOLMAX" ) //tipo_veiculo
 
 	AADD(aNomes,"codigo_veiculo")
 	AADD(aNomes,"descricao_veiculo")
@@ -109,6 +111,9 @@ User Function GetVeiculos(cCodigo)
 //AADD(aNomes,"cap_carga_peso")      
 //AADD(aNomes,"tap_mts_cubicos")      
 	AADD(aNomes,"tipo_veiculo")
+	AADD(aNomes,"capacidade_nominal")
+	AADD(aNomes,"capacidade_max")
+	AADD(aNomes,"volume_max")
 
 
 	For a := 1 To Len(aCampos)

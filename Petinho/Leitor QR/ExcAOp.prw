@@ -17,7 +17,7 @@ User Function GeraOp(cProduto, nQuant)
     Local cNumOp := ""
 	Local aInfos := {}
 
-	lMsErroAuto := .F.
+	private lMsErroAuto := .F.
 	DBSelectArea("SC2")
     DBSetOrder(1)
 
@@ -41,7 +41,6 @@ User Function GeraOp(cProduto, nQuant)
 	If  lMsErroAuto
 		MSGINFO( "Erro na rotina automática", "Atenção" )
 		Mostraerro()
-        cNumOp := SC2->C2_NUM + SC2->C2_ITEM + SC2->C2_SEQUEN //retirar depois
 		/* aadd(aInfos,  cProduto) 
 		aadd(aInfos,   nQuant)
 		aadd(aInfos, cNumOp )
@@ -137,6 +136,7 @@ User Function ApontaOp(cNumOp,cTPMovime, cMaq, cLote)
 	aadd(aItens,{"D3_TM"   ,       	cTPMovime     ,    Nil})
 	aadd(aItens,{"D3_PERDA",     	  0 	,    Nil})
 	aadd(aItens,{"D3_XRECURS",     	  cMaq 	,    Nil})
+	aadd(aItens,{"D3_QUANT",     	  1 	,    Nil})
 	aadd(aItens,{"D3_LOTECTL",     	 cLote  	,    Nil})
 
 	MsExecAuto({|x,y| Mata250(x,y)},aItens,3)
@@ -145,6 +145,7 @@ User Function ApontaOp(cNumOp,cTPMovime, cMaq, cLote)
 		MSGINFO( "Erro na rotina automática." , "Atenção"  )
 		Mostraerro()
 	else
+		
 		xRet := .T.
 		MsgInfo("Apontamento de Produção gerado com sucesso!","Aviso")
 	Endif

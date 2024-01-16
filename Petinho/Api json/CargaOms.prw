@@ -130,7 +130,7 @@ WSMETHOD POST WSSERVICE CargaOms
 		SetRestFault(400,cTexto,.T.)
 		lRet := .F.
 	Else
-		::SetResponse('{"Carga": "'+aCab[2,2]+'","Status": "cadastrado com sucesso!" }')
+		::SetResponse('{"Carga": "'+DAK->DAK_COD+'","Status": "cadastrado com sucesso!" }')
 	EndIf
 	RestArea(aArea)
 	FreeObj(oParseJSON)

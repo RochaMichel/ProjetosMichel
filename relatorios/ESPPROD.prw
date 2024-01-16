@@ -201,15 +201,22 @@ Static Function PrintReport(oRelatorio)
 			oRows1:Cell('UND'):SetValue(PAGE1->UN)
 			oRows1:Cell('Qtd. Prevista'):SetValue(PAGE1->QTDPRE)
 			oRows1:Cell('Qtd. Realizada'):SetValue(PAGE1->QTDRE)
-			oRows1:Cell('Custo'):SetValue(PAGE1->CUSTO) //
-			oRows1:Cell('Custo Total'):SetValue(PAGE1->CUSTOT)
+			DbSelectArea('SB2')
+			DbSelectArea('SB1')
+			SB2->(DbSetOrder(1))
+			SB1->(DbSetOrder(1))
+			SB2->(DbSeek(cFilAnt+PAGE2->B2_COD+PAGE2->B2_LOCAL))
+			SB1->(DbSeek(xFilial('SB1')+PAGE2->B2_COD))
+			aSalTel := CalcEst(SB2->B2_COD,SB2->B2_LOCAL,MV_PAR06+1)
+			oRows1:Cell('Custo '):SetValue(aSalTel[2]/aSaltel[1])
+			oRows1:Cell('Custo Total'):SetValue(PAGE1->QTDRE*round(aSalTel[2]/aSaltel[1],4))
 			oRows1:Printline()
 			nItens++
 			nTItens++
 			nQtdpre  += PAGE1->QTDPRE
 			nQtdrea  += PAGE1->QTDRE
 			nCusto   += PAGE1->CUSTO
-			nCustot  += PAGE1->CUSTOT
+			nCustot  += PAGE1->QTDRE*round(aSalTel[2]/aSaltel[1],4)
 			nTQTDPR  += PAGE1->QTDPRE
 			nTQTDRE  += PAGE1->QTDRE
 			nTCUSTO  += PAGE1->CUSTO
@@ -266,37 +273,7 @@ Static Function PrintReport(oRelatorio)
 		SB2->(DbSeek(cFilAnt+PAGE2->B2_COD+PAGE2->B2_LOCAL))
 		SB1->(DbSeek(xFilial('SB1')+PAGE2->B2_COD))
 		aSalTel := CalcEst(SB2->B2_COD,SB2->B2_LOCAL,MV_PAR06+1)
-		
-		//PRIVATE aGraph  := {}
-		//PRIVATE aTrbP   := {}
-		//PRIVATE aTrbTmp := {}
-		//PRIVATE aTela   := {}
-		//PRIVATE aSalAtu := { 0,0,0,0,0,0,0 }
-		//PRIVATE cPictTotQT:=PesqPictQt("B2_QATU")
-		//PRIVATE nTotSda := nTotEnt :=  nTotvSda := nTotvEnt  := 0
-		//PRIVATE cTRBSD1 := CriaTrab(,.F.)
-		//PRIVATE cTRBSD2 := Subs(cTRBSD1,1,7)+"A"
-		//PRIVATE cTRBSD3 := Subs(cTRBSD1,1,7)+"B"
-		//PRIVATE cPictQT := PesqPict("SB2","B2_QATU",18)
-		//PRIVATE aSalTel := {}
-		//PRIVATE aGraph  := {}
-		//PRIVATE aTrbP   := {}
-		//PRIVATE aTrbTmp := {}
-		//PRIVATE aTela   := {}
-		//PRIVATE aSalAtu := { 0,0,0,0,0,0,0 }
-		//PRIVATE cPictTotQT:=PesqPictQt("B2_QATU")
-		//PRIVATE nTotSda := nTotEnt :=  nTotvSda := nTotvEnt  := 0
-		//PRIVATE cTRBSD1 := CriaTrab(,.F.)
-		//PRIVATE cTRBSD2 := Subs(cTRBSD1,1,7)+"A"
-		//PRIVATE cTRBSD3 := Subs(cTRBSD1,1,7)+"B"
-		//PRIVATE cPictQT := PesqPict("SB2","B2_QATU",18)
 
-//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
-//� Grava as movimentacoes no arquivo de trabalho                �
-//읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
-		
-
-		//oRows2:Cell('Custo Produto'):SetValue(PAGE2->CUSTO)
 		oRows2:Cell('Custo Produto'):SetValue(aSalTel[2]/aSaltel[1])
 		oRows2:Cell('Custo Total'):SetValue(PAGE2->D3_SAIDA*(round(aSalTel[2]/aSaltel[1],4)))
 		oRows2:Printline()
@@ -314,7 +291,6 @@ Static Function PrintReport(oRelatorio)
 	oTotais2:Cell('UND'):SetValue(CValToChar(nItens))
 	oTotais2:Cell('QTD'):SetValue(nQTDPROD)
 	oTotais2:Cell('Custo Produto'):SetValue(nCUSPROD)
-	//oTotais2:Cell('Custo Produto'):SetValue(nCUSTPR)
 	oTotais2:Cell('Custo Total'):SetValue(nCUSTPR)
 	oTotais2:Printline()
 	oTotais2:Finish()

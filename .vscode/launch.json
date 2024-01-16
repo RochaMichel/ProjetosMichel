@@ -103,6 +103,15 @@
 		},
 		{
 			"label": "U_MailPonto"
+		},
+		{
+			"label": "U_GetVeiculos"
+		},
+		{
+			"label": "U_IMpfile"
+		},
+		{
+			"label": "sigacom"
 		}
 	],
 	"lastProgramExecuted": "SIGAmdi"

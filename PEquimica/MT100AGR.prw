@@ -58,9 +58,8 @@ User Function MT100AGR()
 				EndIf
 			EndIf
 		Next
-	EndiF
 	(cAlias)->(DbCloseArea())
-
+	EndiF
 Return
 
 /*/

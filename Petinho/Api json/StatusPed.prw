@@ -70,6 +70,7 @@ User Function GetStatus(cPedido)
 	AADD(aCampos,"C9_PRODUTO")//razao_social
 	AADD(aCampos,"C9_BLEST")//razao_social  
 	AADD(aCampos,"C9_BLCRED")//razao_social
+	AADD(aCampos,"C9_CARGA")//razao_social
 	AADD(aCampos,"C9_NFISCAL")//razao_social
 	AADD(aCampos,"C9_SERIENF")//razao_social
 
@@ -79,6 +80,7 @@ User Function GetStatus(cPedido)
 	AADD(aNomes,"Produto")
 	AADD(aNomes,"Bloqueio_Estoque")
 	AADD(aNomes,"Bloqueio_Credito")
+	AADD(aNomes,"Codigo_carga")
 	AADD(aNomes,"numero_NF")
 	AADD(aNomes,"Serie_NF")
 
