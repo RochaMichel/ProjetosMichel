@@ -26,9 +26,10 @@ User Function MT100AGR()
 	Local nQtde    := 0
 	Local i        := 0
 	Local cProduto := ""
-	Local cGrupo := ""
+	Local cGrupo   := ""
 	Local cLocal   := ""
-	local cAlias := GetNextAlias()
+	Local cLote    := ""
+	local cAlias   := GetNextAlias()
 
 	IF INCLUI
 		aRetAp   := RtItensD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
@@ -39,8 +40,9 @@ User Function MT100AGR()
 			aRet     := RetQtdeD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
 			cProduto := aRet[1]
 			cLocal   := aRet[2]
+			cLote    := aRet[4]
 			nQtde    := aRet[3]
-			U_BaseSeca(SF1->F1_DOC,cProduto, cLocal, nQtde, nPesoBR)
+			U_BaseSeca(SF1->F1_DOC,cProduto, cLocal, nQtde, nPesoBR,cLote)
 		EndIf
 		//EndIf
 		For i := 1 to len(aRetAp)
@@ -81,12 +83,14 @@ Static Function RetQtdeD1(cChave)
 	Local nQtde    := 0
 	Local cProduto := ""
 	Local cLocal   := ""
+	Local cLote   := ""
 
 	DbSelectArea("SD1")
 	SD1->(DbSetOrder(1))
 	If SD1->(DbSeek(cChave))
 		cProduto := SD1->D1_COD
 		cLocal   := SD1->D1_LOCAL
+		cLote  	 := SD1->D1_LOTECTL
 		While SD1->(!EOF()) .And. cChave == SD1->(D1_FILIAL+D1_DOC+D1_SERIE+D1_FORNECE+D1_LOJA)
 			nQtde += SD1->D1_QUANT
 			SD1->(DbSkip())
@@ -94,7 +98,7 @@ Static Function RetQtdeD1(cChave)
 	EndIf
 	RestArea(aAreaSF1)
 
-Return {cProduto, cLocal, nQtde}
+Return {cProduto, cLocal, nQtde, cLote}
 
 Static Function RtItensD1(cChave)
 	Local aAreaSF1 := GetArea()

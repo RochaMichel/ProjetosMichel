@@ -112,7 +112,16 @@
 		},
 		{
 			"label": "sigacom"
+		},
+		{
+			"label": "U_tetstejson"
+		},
+		{
+			"label": "msgnota"
+		},
+		{
+			"label": "U_MsgNota"
 		}
 	],
-	"lastProgramExecuted": "SIGAmdi"
+	"lastProgramExecuted": "SIGAGFE"
 }

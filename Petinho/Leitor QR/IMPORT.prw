@@ -31,27 +31,25 @@ User Function ImpFile()
 		cAlias := GetNextAlias()
 	    FT_FUSE(cDiretorio+aFiles[nFile][1])
 		DbSelectArea('SB1')
-		SB1->(DbSetOrder(5))
 	    Do While !FT_FEOF()
 	    	cBuffer := FT_FREADLN()
 	    	aDados := Separa(cBuffer,',',.T.)
+			SB1->(DbSetOrder(5))
 			If SB1->(DbSeek(xFilial('SB1')+adados[3]))			
 				BeginSql Alias cAlias
 					Select * From %Table:ZOP% ZOP
-					Inner Join %Table:ZOS% ZOS 
-					On ZOS_FILIAL = ZOP_FILIAL 
-					AND ZOS_NPRO = ZOP_NPRO
-					Where ZOS_PROD = %EXP:Alltrim(SB1->B1_COD)%
-					AND ZOP.%notdel% AND ZOS.%notdel% 
+					Where ZOP_PROD = %EXP:Alltrim(SB1->B1_COD)%
+					AND ZOP.%notdel% 
 					AND ZOP_DATA = %EXP:DtoS(dDatabase)%
 				EndSql 
 				If (cAlias)->(!EOF())
 	    			U_ApontaOp(Alltrim((cAlias)->ZOP_NUMOP), GetMV('MV_XQRLEN',,'001'),GetMV('MV_XMAQUI',,'01'), Alltrim((cAlias)->ZOP_LOTE))
-				EndIF
-			EndIF
+				EndIf
+			EndIf
 	    	FT_FSKIP()
 	    Enddo
 	    FT_FUSE()
+		
 		__CopyFile(cDiretorio+aFiles[nFile][1], cDest+aFiles[nFile][1])
 
 		If FERASE(cDiretorio+aFiles[nFile][1]) == -1
@@ -59,7 +57,6 @@ User Function ImpFile()
 		Endif
 		(cAlias)->(DbCloseArea())
 	Next nFile
-	
 	RestArea(aArea)
 	If lAtivAmb
 		RPCClearEnv()

@@ -87,7 +87,6 @@ User Function GetProduto(cCodigo)
 	AADD(aNomes,"peso_liquido")
 	AADD(aNomes,"peso_bruto")
 	AADD(aNomes,"fator_conversao")
-
 	AADD(aNomes1,"comprimento")
 	AADD(aNomes1,"largura")
 	AADD(aNomes1,"altura")

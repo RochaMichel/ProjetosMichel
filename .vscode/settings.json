@@ -1,4 +1,5 @@
 {
     "totvsLanguageServer.welcomePage": false,
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "totvsLanguageServer.editor.linter.includes": "C:\\TOTVS.PROTHEUS\\Protheus\\Protheus\\include"
 }

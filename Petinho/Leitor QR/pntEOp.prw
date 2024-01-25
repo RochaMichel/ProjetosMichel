@@ -43,13 +43,13 @@ If aParam <> NIL
     //Comparar com o campo ZOP_QUANT usando o ponto de entrada
     //Se forem iguais chamar a função apontamento de op.
 
+    nOpc    := oObj:GetOperation() //pega a operação
     If cIdPonto == 'FORMPOS' //Validação total do formulario
     /*  Teste
         Preciso ver se depois de executar o 'GeraOP' eu consigo retornar o numero de OP resultante
         e atualizar o valor no formulário antes da gravação
         Se for possível guardar esse número eu vou poder usá-lo para gerar a MI e o Apontamento
     */
-        nOpc    := oObj:GetOperation() //pega a operação
 
 
         If cIdModel == 'ZOPMASTER'
@@ -74,7 +74,7 @@ If aParam <> NIL
         EndIf
 
 
-    ElseIf cIdPonto == 'FORMCOMMITTTSPOS' .AND. cIdModel == "ZOPMASTER"
+    ElseIf cIdPonto == 'FORMCOMMITTTSPOS' .AND. cIdModel == "ZOPMASTER" .AND. nOpc == 3
     
         nOpc    := oObj:GetOperation() //pega a operação
 
@@ -110,15 +110,15 @@ If aParam <> NIL
 
         next i
 
-        If nOpc == 4 /* alteração */ .AND. nQuant == nLeitur .AND. !EMPTY( aItem );
-            .AND. !EMPTY(cNumOp)
-        Aviso('Atenção', 'Será gerado o apontamento da OP: ', {'OK'}, 03)
+        //If nOpc == 4 /* alteração */ .AND. nQuant == nLeitur .AND. !EMPTY( aItem );
+        //    .AND. !EMPTY(cNumOp)
+        //Aviso('Atenção', 'Será gerado o apontamento da OP: ', {'OK'}, 03)
         /*  Gera o MI dos produtos base (formulário) e
             faz o apontamento do produto acabado (cabeçalho)
         */
         xRet := U_GeraMI(aItem, cNumOp, '501')
         //xRet := U_ApontaOp(cNumOp, '001','01', cLote) //precisa de nQuant?
-        EndIf
+       //EndIf
 
     EndIf
 EndIf

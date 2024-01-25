@@ -18,29 +18,7 @@ WSMETHOD POST WSSERVICE CargaOms
 	Local aLog             := {}
 	Local cTexto           := ""
 	Local nX               :=  0
-	
 
-	//cJson += '{ '
-	//cJson += '   "Carga":{ '
-	//cJson += '      "codigo_romaneio":"86", '
-	//cJson += '      "peso_carga":"52.2", '
-	//cJson += '      "codigo_motorista":"6048", '
-	//cJson += '      "codigo_caminhao":"1", '
-	//cJson += '      "data_hora_carga":"2023-11-27 11:48:10", '
-	//cJson += '      "Clientes":[ '
-	//cJson += '         { '
-	//cJson += '            "codigo_cliente":"10808491", '
-	//cJson += '            "codigo_protheus":"027771", '
-	//cJson += '            "lote":"15" '
-	//cJson += '         }, '
-	//cJson += '         { '
-	//cJson += '            "codigo_cliente":"06098758", '
-	//cJson += '            "codigo_protheus":"958449", '
-	//cJson += '            "lote":"15" '
-	//cJson += '         } '
-	//cJson += '      ] '
-	//cJson += '   } '
-	//cJson += '} '
 	
     Private lMsErroAuto    := .F.
 	Private lAutoErrNoFile := .T.

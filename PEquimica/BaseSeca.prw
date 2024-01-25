@@ -13,11 +13,11 @@ Descrição 	|	Função para verificar a diferença no peso e gerar o movimento de aj
 Uso		 	|   MT100AGR.prw			                                  	              |
 -------------------------------------------------------------------------------------------
 /*/
-User Function BaseSeca(cNota,cProduto, cLocal, nQtde, nPesoB)
+User Function BaseSeca(cNota,cProduto, cLocal, nQtde, nPesoB,cLote)
 
 	If nQtde < nPesoB
 		//Realiza movimento de ajuste de saldo
-		AjSaldoBS(cNota ,cProduto, cLocal, nPesoB - nQtde)
+		AjSaldoBS(cNota ,cProduto, cLocal, nPesoB - nQtde, cLote)
 	Endif
 
 Return
@@ -36,7 +36,7 @@ Return
 	-------------------------------------------------------------------------------------------
 /*/
 
-Static Function AjSaldoBS(cNota,cProduto, cLocal, nQtdAj)
+Static Function AjSaldoBS(cNota,cProduto, cLocal, nQtdAj,cLote)
 	Local aCab      := {}
 	Local aItem     := {}
 	Local aItens    := {}
@@ -51,7 +51,8 @@ Static Function AjSaldoBS(cNota,cProduto, cLocal, nQtdAj)
 	aItem := {{"D3_COD"     , cProduto , NIL},;
 		{"D3_QUANT"   , nQtdAj   , NIL},;
 		{"D3_LOCAL"   , cLocal   , NIL},;
-		{"D3_CUSTO1"  , 0.00     , NIL} }
+		{"D3_CUSTO1"  , 0.00     , NIL} ,;
+		{"D3_LOTECTL"  , cLote     , NIL} }
 
 	aadd(aItens, aItem)
 
@@ -65,6 +66,16 @@ Static Function AjSaldoBS(cNota,cProduto, cLocal, nQtdAj)
 		RecLock('SD3',.F.)
 		SD3->D3_CUSTO1 := 0
 		SD3->(MsUnlock())
+		//Identifica que será executado via JOB
+		lJob := .T.
+
+		cPerg := "MTA300"
+		DbSelectArea('SB2')
+		SB2->(DbSetOrder(1))
+		SB2->(DbSeek(xFilial('SB2')+cProduto))
+		Pergunte(cPerg, .F.)
+		lMsErroAuto := .F.
+		MSExecAuto({|x| MATA300(x)}, lJob)
 	EndIf
 
 Return
