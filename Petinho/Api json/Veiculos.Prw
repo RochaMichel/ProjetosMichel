@@ -124,15 +124,21 @@ User Function GetVeiculos(cCodigo)
 
 	cQuery += "SELECT "
 	cQuery += cCampos
+	cQuery += ", CASE "
+    cQuery +=" WHEN DA3.D_E_L_E_T_ <> '*' THEN 0 "
+    cQuery +=" ELSE 1 "
+    cQuery +="    END AS DELETADO  " 
 	cQuery += "FROM " + RetSqlName("DA3") + " DA3 "
-	cQuery += "WHERE DA3.D_E_L_E_T_ <> '*' "
+	cQuery += "WHERE "
+	cQuery += " DA3_MSEXP = '' "
 	If !Empty(cCodigo)
 		cQuery += "AND DA3_COD = '"+cCodigo+"'
 	EndIf
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+		dbSelectArea('DA3')
+	DA3->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["Veiculos"] := {}
@@ -142,6 +148,12 @@ User Function GetVeiculos(cCodigo)
 				xConteudo := &("TMP->"+aCampos[a])
 				&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 			Next
+			oLine["deletado"] := TMP->DELETADO
+			if DA3->(DbSeek(xFilial('DA3')+TMP->DA3_COD))
+				Reclock('DA3',.F.)
+				DA3->DA3_MSEXP := DtoS(dDatabase)
+				DA3->(MsUnlock())
+			EndIf
 			AADD(oBody["Veiculos"],oLine)
 			TMP->(DbSkip())
 		EndDo

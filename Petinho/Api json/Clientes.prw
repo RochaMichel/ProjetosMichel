@@ -20,18 +20,18 @@ End WsRestful
 WSMETHOD GET WSRECEIVE CGC WSSERVICE Clientes
 
 
-Local nPosCGC := aScan(Self:AQueryString, {|x| AllTrim(Upper(x[1])) == "CGC"})
-Local cCGC
-Local oBody
-Local cJson
-If nPosCGC > 0
-	cCGC := Self:AQueryString[nPosCGC][2]
-EndIf
-oBody       := u_Getcliente(cCGC)
-cJson           := oBody:toJson()
+	Local nPosCGC := aScan(Self:AQueryString, {|x| AllTrim(Upper(x[1])) == "CGC"})
+	Local cCGC
+	Local oBody
+	Local cJson
+	If nPosCGC > 0
+		cCGC := Self:AQueryString[nPosCGC][2]
+	EndIf
+	oBody       := u_Getcliente(cCGC)
+	cJson           := oBody:toJson()
 
-::SetContentType( 'application/json' )
-::SetResponse(cJson)
+	::SetContentType( 'application/json' )
+	::SetResponse(cJson)
 
     /*
 	SetRestFault(400,"Ops")
@@ -64,7 +64,7 @@ User Function Getcliente(cCGC)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
@@ -88,7 +88,7 @@ User Function Getcliente(cCGC)
 	AADD(aCampos,"A1_ESTADO")//estado
 	AADD(aCampos,"A1_CEPE")//cep_entrega
 	AADD(aCampos,"A1_ENDENT")//endereco_entrega
-	AADD(aCampos,"A1_COMPENT")//complemento_entrega 
+	AADD(aCampos,"A1_COMPENT")//complemento_entrega
 	AADD(aCampos,"A1_BAIRROE")//bairro_entrega
 	AADD(aCampos,"A1_MUNE")//cidade_entrega
 	AADD(aCampos,"A1_EST")//estado_entrega
@@ -104,7 +104,7 @@ User Function Getcliente(cCGC)
 	AADD(aCampos,"A1_XORDEMV")//codigo_segmento
 	AADD(aCampos,"A1_XDATAVI")//data_visita
 	AADD(aCampos,"A1_CODSEG")//codigo_segmento
-    AADD(aCampos,"A1_REGIAO")//codigo_roteirizacao
+	AADD(aCampos,"A1_REGIAO")//codigo_roteirizacao
 	AADD(aCampos,"A1_SITUA")//situacaoD
 	AADD(aCampos,"A1_OBSERV")//observação
 	AADD(aCampos,"A1_XLAT")//observação
@@ -142,12 +142,12 @@ User Function Getcliente(cCGC)
 	AADD(aNomes,"codigo_regional")
 	AADD(aNomes,"saldo")
 	AADD(aNomes,"limite_credito")
-//AADD(aNomes,"codigo_cluster")
+//AADD(aNomes,"codigo_cluster")O
 	AADD(aNomes,"codigo_visita")
 	AADD(aNomes,"ordem_movimento")
 	AADD(aNomes,"data_visita")
 	AADD(aNomes,"codigo_segmento")
-    AADD(aNomes,"codigo_roteirizacao")
+	AADD(aNomes,"codigo_roteirizacao")
 	AADD(aNomes,"situacao")
 	AADD(aNomes,"observacao")
 	AADD(aNomes,"latitude")
@@ -160,10 +160,14 @@ User Function Getcliente(cCGC)
 	cCampos := SubStr(cCampos, 1, Len(cCampos) - 2) + Space(1)
 
 	cQuery += "SELECT "
-	cQuery += cCampos+',A1_LOJA'
+	cQuery += cCampos+',A1_LOJA,'
+	cQuery += " CASE "
+    cQuery +=" WHEN SA1.D_E_L_E_T_ <> '*' THEN 0 "
+    cQuery +=" ELSE 1 "
+    cQuery +="    END AS DELETADO  " 
 	cQuery += "FROM " + RetSqlName("SA1") + " SA1 "
 	cQuery += "WHERE A1_MSBLQL = 2 "
-	cQuery += "AND SA1.D_E_L_E_T_ <> '*' "
+	cQuery += "AND A1_MSEXP = '' "
 	If !Empty(cCGC)
 		cQuery += "AND A1_CGC = '"+cCGC+"'
 	EndIf
@@ -171,7 +175,8 @@ User Function Getcliente(cCGC)
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+	dbSelectArea('SA1')
+	SA1->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["cliente"] := {}
@@ -189,6 +194,12 @@ User Function Getcliente(cCGC)
 					&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 				EndIf
 			Next
+			oLine["deletado"] := TMP->DELETADO
+			if SA1->(DbSeek(xFilial('SA1')+TMP->A1_COD+TMP->A1_LOJA))
+				Reclock('SA1',.F.)
+				SA1->A1_MSEXP := DtoS(dDatabase)
+				SA1->(MsUnlock())
+			EndIf
 			AADD(oBody["cliente"],oLine)
 			TMP->(DbSkip())
 		EndDo

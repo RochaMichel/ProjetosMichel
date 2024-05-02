@@ -63,7 +63,7 @@ User Function GetMotoristas(cCodigo)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
@@ -86,15 +86,21 @@ User Function GetMotoristas(cCodigo)
 
 	cQuery += "SELECT "
 	cQuery += cCampos
+	cQuery += ", CASE "
+    cQuery +=" WHEN DA4.D_E_L_E_T_ <> '*' THEN 0 "
+    cQuery +=" ELSE 1 "
+    cQuery +="    END AS DELETADO  " 
 	cQuery += "FROM " + RetSqlName("DA4") + " DA4 "
-	cQuery += "WHERE DA4.D_E_L_E_T_ <> '*' "
+	cQuery += "WHERE "
+	cQuery += " DA4_MSEXP = '' "
 	If !Empty(cCodigo)
 		cQuery += "AND DA4_COD = '"+cCodigo+"'
 	EndIf
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+	dbSelectArea('DA4')
+	DA4->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["Motoristas"] := {}
@@ -104,6 +110,12 @@ User Function GetMotoristas(cCodigo)
 				xConteudo := &("TMP->"+aCampos[a])
 				&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 			Next
+			oLine["deletado"] := TMP->DELETADO
+			if DA4->(DbSeek(xFilial('DA4')+TMP->DA4_COD))
+				Reclock('DA4',.F.)
+				DA4->DA4_MSEXP := DtoS(dDatabase)
+				DA4->(MsUnlock())
+			EndIf
 			AADD(oBody["Motoristas"],oLine)
 			TMP->(DbSkip())
 		EndDo

@@ -63,7 +63,7 @@ User Function Getcondpagm(cCodigo)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
@@ -96,15 +96,21 @@ User Function Getcondpagm(cCodigo)
 
 	cQuery += "SELECT "
 	cQuery += cCampos
-	cQuery += "FROM " + RetSqlName("SE4") + " SE4 "
-	cQuery += "WHERE SE4.D_E_L_E_T_ <> '*' "
+	cQuery += ", CASE "
+    cQuery +=" WHEN SE4.D_E_L_E_T_ <> '*' THEN 0 "
+    cQuery +=" ELSE 1 "
+    cQuery +="    END AS DELETADO  " 
+	cQuery +=" FROM " + RetSqlName("SE4") + " SE4 "
+	cQuery +=" WHERE  "
+	cQuery +=" E4_MSEXP = '' "
 	If !Empty(cCodigo)
 		cQuery += "AND E4_CODIGO = '"+cCodigo+"'
 	EndIf
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+	dbSelectArea('SE4')
+	SE4->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["condpagm"] := {}
@@ -114,6 +120,12 @@ User Function Getcondpagm(cCodigo)
 				xConteudo := &("TMP->"+aCampos[a])
 				&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 			Next
+			oLine["deletado"] := TMP->DELETADO
+			if SE4->(DbSeek(xFilial('SE4')+TMP->E4_CODIGO))
+				Reclock('SE4',.F.)
+				SE4->E4_MSEXP := DtoS(dDatabase)
+				SE4->(MsUnlock())
+			EndIf
 			AADD(oBody["condpagm"],oLine)
 			TMP->(DbSkip())
 		EndDo

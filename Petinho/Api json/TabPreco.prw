@@ -19,19 +19,19 @@ End WsRestful
 
 WSMETHOD GET  WSRECEIVE CODIGO WSSERVICE Tabpreco
 
-Local nPosCod := aScan(Self:AQueryString, {|x| AllTrim(Upper(x[1])) == "CODIGO"})
-Local cCodigo
-Local oBody
-Local cJson
-If nPosCod > 0
-	cCodigo := Self:AQueryString[nPosCod][2]
+	Local nPosCod := aScan(Self:AQueryString, {|x| AllTrim(Upper(x[1])) == "CODIGO"})
+	Local cCodigo
+	Local oBody
+	Local cJson
+	If nPosCod > 0
+		cCodigo := Self:AQueryString[nPosCod][2]
 
-EndIf
-oBody       := u_Gettabpreco(cCodigo)
-cJson           := oBody:toJson()
+	EndIf
+	oBody       := u_Gettabpreco(cCodigo)
+	cJson           := oBody:toJson()
 
-::SetContentType( 'application/json' )
-::SetResponse(cJson)
+	::SetContentType( 'application/json' )
+	::SetResponse(cJson)
 
     /*
 	SetRestFault(400,"Ops")
@@ -66,12 +66,13 @@ User Function Gettabpreco(cCodigo)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
 	AADD(aCampos,"DA0_CODTAB")// codigo_tabela_preco
 //AADD(aCampos,"E1_EMISSAO")// situacao             
+	AADD(aCampos,"DA0_DESCRI")// Descrição
 //AADD(aCampos,"B1_UM")   // codigo_regional          
 	AADD(aCampos,"DA0_DATDE") // data_inicio_vigencia
 	AADD(aCampos,"DA0_DATATE")// data_termino_vigencia
@@ -86,7 +87,7 @@ User Function Gettabpreco(cCodigo)
 
 	AADD(aNomes,"codigo_tabela_preco")
 //AADD(aNomes,"situacao     ")
-//AADD(aNomes,"codigo_regional    ")
+    AADD(aNomes,"descricao_tabela")
 	AADD(aNomes,"data_inicio_vigencia")
 	AADD(aNomes,"data_termino_vigencia")
 //AADD(aNomes,"codigo_tabela_preco_produto")
@@ -115,8 +116,10 @@ User Function Gettabpreco(cCodigo)
 	cQuery += "FROM " + RetSqlName("DA0") + " DA0 "
 	cQuery += "INNER JOIN " + RetSqlName("DA1") + " DA1 "
 	cQuery += "ON DA1_CODTAB = DA0_CODTAB "
-	cQuery += "WHERE DA0.D_E_L_E_T_ <> '*' "
-	cQuery += "AND DA1.D_E_L_E_T_ <> '*' "
+	cQuery += "WHERE  "
+	cQuery += " DA0_ATIVO = '1' "
+	cQuery += " AND DA0.D_E_L_E_T_ <> '*'  "
+	cQuery += " AND DA1.D_E_L_E_T_ <> '*' "
 	If !Empty(cCodigo)
 		cQuery += "AND DA0_CODTAB = '"+cCodigo+"'
 	EndIf
@@ -124,12 +127,13 @@ User Function Gettabpreco(cCodigo)
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+	dbSelectArea('DA1')
+	DA1->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["tabpreco"] := {}
 		While TMP->(!EOF())
-		    oLine := JsonObject():new()
+			oLine := JsonObject():new()
 			For a := 1 To Len(aCampos)
 				xConteudo := &("TMP->"+aCampos[a])
 				&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"'))
@@ -138,9 +142,17 @@ User Function Gettabpreco(cCodigo)
 			oLine['Produtos'] := {}
 			While TMP->(!EOF()) .AND. TMP->DA0_CODTAB == cCodtab
 				oLineP      := JsonObject():new()
-				For a := 1 To Len(aCamposP)
+				For a := 1 To Len(aCamposP) 
 					xConteudo := &("TMP->"+aCamposP[a])
-					&('oLineP["'+aNomesP[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"'))
+					if posicione('SB1',1,xFilial('SB1')+TMP->DA1_CODPRO,'B1_TIPCONV') == 'D'
+						if aNomesP[a] == "valor_produto" 
+							&('oLineP["'+aNomesP[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar((xConteudo*posicione('SB1',1,xFilial('SB1')+TMP->DA1_CODPRO,'B1_CONV'))), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"'))
+						Else
+							&('oLineP["'+aNomesP[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"'))
+						EndIF
+					Else
+						&('oLineP["'+aNomesP[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"'))
+					EndIf
 				Next
 				AADD(oLine["Produtos"],oLineP)
 				TMP->(DbSkip())

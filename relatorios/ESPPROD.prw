@@ -4,9 +4,6 @@
 #Include "FWPrintSetup.ch"
 #include "TopConn.ch"
 #include "COLORS.ch"
-#INCLUDE "MATC030.CH"
-#INCLUDE "PROTHEUS.CH"
-#DEFINE USADO CHR(0)+CHR(0)+CHR(1)
 
 #define CLR_SILVER rgb(192,192,192)
 #define CLR_LIGHTGRAY rgb(220,220,220)
@@ -22,13 +19,13 @@ User Function ESPPROD()
 	Private _lBold    := .T. //Controle de IMpressÃ£o em NEgrito
 	Private lAutoSize := .T.
 
-	aAdd(aPergs, {1, "Codigo de     "         ,space(TamSX3("B1_COD")[1]) , "",  ".T."  , "SB1", ".T."   , 40, .F.}) //mv_par05
-	aAdd(aPergs, {1, "Codigo  até   "         ,space(TamSX3("B1_COD")[1]) , "",  ".T."  , "SB1", ".T."   , 40, .T.}) //2
-	aAdd(aPergs, {1, "Grupo  de     "         ,space(TamSX3("B1_CC")[1]) , "",  ".T."  , "", ".T."   , 40, .F.}) //cLocal
-	aAdd(aPergs, {1, "Grupo  até    "         ,space(TamSX3("B1_CC")[1]) , "",  ".T."  , "", ".T."   , 40, .T.}) //1
+	aAdd(aPergs, {1, "Codigo de     "         ,space(TamSX3("B1_COD")[1]) , "",  ".T."  , "SB1", ".T."   , 40, .F.}) //MV_Par01
+	aAdd(aPergs, {1, "Codigo  até   "         ,space(TamSX3("B1_COD")[1]) , "",  ".T."  , "SB1", ".T."   , 40, .T.}) //MV_Par02
+	aAdd(aPergs, {1, "Grupo  de     "         ,space(TamSX3("B1_CC")[1]) , "",  ".T."  , "", ".T."   , 40, .F.}) //MV_Par03
+	aAdd(aPergs, {1, "Grupo  até    "         ,space(TamSX3("B1_CC")[1]) , "",  ".T."  , "", ".T."   , 40, .T.}) //MV_Par04
 	aAdd(aPergs, {1, "Data De       "         ,Date()   , "", ".T.", "", ".T.", 80 , .F.}) //MV_PAR05
 	aAdd(aPergs, {1, "Data Até      "         ,Date()   , "", ".T.", "", ".T.", 80 , .T.}) //MV_PAR06
-	//aAdd(aPergs, {1, "Armazém     "           ,space(TamSX3("B2_LOCAL")[1]) , "",  ".T."  , "NNR", ".T."   , 40, .F.}) //1
+	//aAdd(aPergs, {1, "Armazém     "           ,space(TamSX3("B2_LOCAL")[1]) , "",  ".T."  , "NNR", ".T."   , 40, .F.}) //MV_Par07
 
 	If !parambox(aPergs,"Informe os parametros")
 		Return
@@ -41,7 +38,7 @@ User Function ESPPROD()
 	oHeader   := TRSection():New(oRelatorio, cTitulo , {'SB1','SB2','SC2'},,,,,,.F.,.F.,.F.,,,,,,,,,CLR_LIGHTGRAY)
 	TRCell():New(oHeader,  ''  ,''    , ""     ,PesqPict("SC2", "C2_DATRF")  ,TamSX3("C2_DATRF")[1]         ,/*lPixel*/,, "LEFT" ,          ,"LEFT"      ,          ,         ,lAutoSize      ,          ,         ,_lBold)
 
-
+	
 	oHeader1   := TRSection():New(oRelatorio, cTitulo , {'SB1','SB2','SC2'},,,,,,.F.,.F.,.F.,,,,,,,,,CLR_LIGHTGRAY)
 	TRCell():New(oHeader1,  'Codigo'             ,''    ,      ,PesqPict("SB1", "B1_COD")  ,TamSX3("B1_COD")[1]         ,/*lPixel*/,, "LEFT" ,          ,"LEFT"      ,          ,         ,lAutoSize      ,          ,         ,_lBold)
 	TRCell():New(oHeader1,  'Descrição'          ,''    ,      ,PesqPict("SB1", "B1_DESC") ,40                          ,/*lPixel*/,, "LEFT" ,          ,"LEFT"      ,          ,         ,lAutoSize      ,          ,         ,_lBold)
@@ -132,51 +129,59 @@ Static Function PrintReport(oRelatorio)
 	Local nCUSPROD 		:= 0
 	Local nCUSTPR		:= 0
 	Local cGrupo    	:= ""
-	PRIVATE aSalTel := {}
 
-	cPAGE1 := " SELECT  B1_COD,  "
-	cPAGE1 += "         B1_DESC,  "
-	cPAGE1 += "         'TON' UN,  "
-	cPAGE1 += "         B1_CC,  "
-	cPAGE1 += " SUM(C2_QUANT) / NULLIF(1000, 0) AS QTDPRE, "
-	cPAGE1 += " SUM(C2_QUJE) / NULLIF(1000, 0) AS QTDRE, "
-	cPAGE1 += " CASE WHEN SUM(C2_QUJE) = 0 THEN 0 ELSE SUM(B2_CM1 * C2_QUJE) / (SUM(C2_QUJE) / NULLIF(1000, 0)) END AS CUSTO, "
-	cPAGE1 += " CASE WHEN SUM(B2_CM1 * C2_QUJE) = 0 THEN 0 ELSE SUM(B2_CM1 * C2_QUJE) END AS CUSTOT "
-	cPAGE1 += " FROM "+RetSqlName('SB1')+" B1 "
-	cPAGE1 += " INNER JOIN "+RetSqlName('SC2')+" C2 "
-	cPAGE1 += " ON B1.B1_FILIAL = C2.C2_FILIAL AND B1.B1_COD = C2.C2_PRODUTO "
-	cPAGE1 += " INNER JOIN "+RetSqlName('SB2')+" B2 "
-	cPAGE1 += " ON B1.B1_FILIAL = B2.B2_FILIAL AND B1.B1_COD = B2.B2_COD "
-	cPAGE1 += " WHERE B1.D_E_L_E_T_ <> '*' "
-	cPAGE1 += " AND C2.D_E_L_E_T_ <> '*' "
-	cPAGE1 += " AND B2.D_E_L_E_T_ <> '*' "
-	cPAGE1 += " AND B1.B1_MSBLQL = '2' "
-	cPAGE1 += " AND C2.C2_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"' "
-	cPAGE1 += " AND B1.B1_TIPO IN ('PA', 'PI') "
+	cPAGE1 := " SELECT  "
+    cPAGE1 += " B1_COD, "
+    cPAGE1 += " B1_DESC, "
+    cPAGE1 += " 'TON' AS UN, "
+    cPAGE1 += " B1_CC, "
+    cPAGE1 += " SUM(C2_QUANT) / NULLIF(1000, 0) AS QTDPRE, "
+    cPAGE1 += " SUM(C2_QUJE) / NULLIF(1000, 0) AS QTDRE, "
+    cPAGE1 += " CASE WHEN SUM(C2_QUJE) = 0 THEN 0 ELSE SUM(B2_CM1 * C2_QUJE) / (SUM(C2_QUJE) / NULLIF(1000, 0)) END AS CUSTO, "
+    cPAGE1 += " SUM(B2_CM1 * C2_QUJE) AS CUSTOT "
+	cPAGE1 += " 	FROM "+RetSqlName('SB1')+" B1 "
+	cPAGE1 += " 	INNER JOIN "+RetSqlName('SC2')+" C2 ON B1.B1_FILIAL = C2.C2_FILIAL AND B1.B1_COD = C2.C2_PRODUTO "
+	cPAGE1 += " 	INNER JOIN "+RetSqlName('SB2')+" B2 ON B1.B1_FILIAL = B2.B2_FILIAL AND B1.B1_COD = B2.B2_COD "
+	cPAGE1 += " 	WHERE B1.D_E_L_E_T_ <> '*' AND C2.D_E_L_E_T_ <> '*' AND B2.D_E_L_E_T_ <> '*' "
+    cPAGE1 += " 	AND B1.B1_MSBLQL = '2' "
+    cPAGE1 += " 	AND B2.B2_LOCAL = C2.C2_LOCAL "
+    cPAGE1 += " 	AND C2.C2_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"' "
+    cPAGE1 += " 	AND B1.B1_TIPO IN ('PA', 'PI') "
 	cPAGE1 += " GROUP BY B1_COD, B1_DESC, B1_UM, B1_CC "
-	cPAGE1 += " ORDER BY B1_CC "
-
-	MEMOWRITE( "C:\temp\espprod_page1.txt", CPAGE1 )
+	cPAGE1 += " ORDER BY B1_CC, B1_COD "
 
 	MpSysOpenQuery(cPAGE1, 'PAGE1')
 
-	cPAGE2 := " SELECT B1_COD,  "
-	cPAGE2 += "        B1_DESC, "
-	cPAGE2 += "        B1_UM,   "
-	cPAGE2 += "        B2_COD,   "
-	cPAGE2 += "        B2_LOCAL,   "
-	cPAGE2 += "        B1_LOCPAD,   "
-	cPAGE2 += " ( SELECT SUM(D3_QUANT) AS QTDE FROM "+RetSqlName('SD3')+" D3 WHERE D3.D3_FILIAL = '"+xFilial("SD3")+"' AND D3.D3_COD = B1.B1_COD AND D3.D_E_L_E_T_ <> '*' AND D3.D3_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"' AND d3_cf Like '%RE%' AND D3_LOCAL = B1_LOCPAD ) AS D3_SAIDA, "
-	cPAGE2 += " ( SELECT SUM(D2_QUANT) AS QTDE FROM "+RetSqlName('Sd2')+" D2 WHERE D2.D2_FILIAL = '"+xFilial("SD2")+"' AND D2.D2_COD = B1.B1_COD AND D2.D_E_L_E_T_ <> '*' AND D2.D2_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06) +"') AS D2_SAIDA, "
-	cPAGE2 += "        SUM(B2_CM1) CUSTO, "
-	cPAGE2 += "        SUM(B2_CM1 * (SELECT SUM(D3_QUANT) AS QTDE FROM "+RetSqlName('SD3')+" D3 WHERE D3.D3_FILIAL = '"+xFilial("SD3")+"'AND D3_LOCAL = B1_LOCPAD AND D3.D3_COD = B1.B1_COD AND D3.D_E_L_E_T_ <> '*' AND D3.D3_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"') ) AS CUSTOT "
-	cPAGE2 += " FROM "+RetSqlName('SB1')+" B1 "
-	cPAGE2 += " INNER JOIN "+RetSqlName('SB2')+" B2 ON B2_FILIAL = B1_FILIAL AND B2.B2_COD = B1.B1_COD "
-	cPAGE2 += " WHERE B1.D_E_L_E_T_ <> '*' AND B2.D_E_L_E_T_ <> '*' "
-	cPAGE2 += " AND B1_COD IN (SELECT D3_COD FROM "+RetSqlName('SD3')+" D3 WHERE D3.D3_FILIAL = B1.B1_FILIAL AND D3.D3_COD = B1.B1_COD AND D3.D_E_L_E_T_ <> '*' AND D3.D3_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"') "
-	cPAGE2 += " AND B2_LOCAL = B1_LOCPAD "
-	cPAGE2 += " GROUP BY B1_COD, B1_DESC, B1_UM ,B2_COD, B2_LOCAL, B1_LOCPAD"
+	cPAGE2 := " SELECT  "
+	cPAGE2 += " B1_FILIAL,  "
+    cPAGE2 += " B1_COD, "
+    cPAGE2 += " B1_DESC, "
+    cPAGE2 += " B1_UM, "
+    cPAGE2 += " (SELECT SUM(D3_QUANT) AS QTDE FROM "+RetSqlName('SD3')+" D3 WHERE D3.D3_COD = B1.B1_COD AND D3.D_E_L_E_T_ <> '*' AND D3.D3_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"' AND D3.D3_CF LIKE 'RE%' ) AS QTD,"
+    cPAGE2 += " (SELECT SUM(B2_CM1) AS CUSTO FROM "+RetSqlName("SB2")+" SB2 WHERE B2_COD = B1.B1_COD AND SB2.D_E_L_E_T_ <> '*') AS CUSTOT"
+	cPAGE2 += " 	FROM "+RetSqlName('SB1')+" B1 "
+	//cPAGE2 += " 	INNER JOIN "+RetSqlName('SB2')+" B2 ON B2.B2_COD = B1.B1_COD "
+	cPAGE2 += " 	WHERE B1.D_E_L_E_T_ <> '*' "
+    cPAGE2 += " 	AND B1_COD IN (SELECT D3_COD FROM "+RetSqlName('SD3')+" D3 WHERE D3.D3_FILIAL = B1.B1_FILIAL AND D3.D3_COD = B1.B1_COD AND D3.D_E_L_E_T_ <> '*' AND D3.D3_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"') "
+	cPAGE2 += " GROUP BY B1_FILIAL, B1_COD, B1_DESC, B1_UM "
 
+
+	/*
+	cPAGE2 += "        SUM(D3_QUANT) QTD,  "
+	cPAGE2 += "        SUM(B2_CM1) CUSTO,  "
+	cPAGE2 += "        SUM(B2_CM1 * D3_QUANT) CUSTOT "
+	cPAGE2 += " FROM "+RetSqlName('SD3')+" D3                       "
+	cPAGE2 += " INNER JOIN "+RetSqlName('SB1')+" B1 ON D3.D3_FILIAL = B1.B1_FILIAL "
+	cPAGE2 += " AND D3.D3_COD = B1.B1_COD "
+	cPAGE2 += " INNER JOIN "+RetSqlName('SB2')+" B2 ON D3.D3_FILIAL = B2.B2_FILIAL "
+	cPAGE2 += " AND D3.D3_COD = B2.B2_COD "
+	cPAGE2 += " WHERE B1.D_E_L_E_T_ <> '*' "
+	cPAGE2 += " AND B2.D_E_L_E_T_ <> '*' "
+	cPAGE2 += " AND D3.D_E_L_E_T_ <> '*' "
+	cPAGE2 += " AND D3.D3_EMISSAO BETWEEN '"+DtoS(MV_PAR05)+"' AND '"+DtoS(MV_PAR06)+"'"
+	cPAGE2 += " GROUP BY B1_COD, B1_DESC, B1_UM "
+    */
+	//
 	MEMOWRITE( "C:\temp\ESPPROD_PAGE2.txt",  cPAGE2)
 
 	MpSysOpenQuery(cPAGE2, 'PAGE2')
@@ -201,22 +206,15 @@ Static Function PrintReport(oRelatorio)
 			oRows1:Cell('UND'):SetValue(PAGE1->UN)
 			oRows1:Cell('Qtd. Prevista'):SetValue(PAGE1->QTDPRE)
 			oRows1:Cell('Qtd. Realizada'):SetValue(PAGE1->QTDRE)
-			DbSelectArea('SB2')
-			DbSelectArea('SB1')
-			SB2->(DbSetOrder(1))
-			SB1->(DbSetOrder(1))
-			SB2->(DbSeek(cFilAnt+PAGE2->B2_COD+PAGE2->B2_LOCAL))
-			SB1->(DbSeek(xFilial('SB1')+PAGE2->B2_COD))
-			aSalTel := CalcEst(SB2->B2_COD,SB2->B2_LOCAL,MV_PAR06+1)
-			oRows1:Cell('Custo '):SetValue(aSalTel[2]/aSaltel[1])
-			oRows1:Cell('Custo Total'):SetValue(PAGE1->QTDRE*round(aSalTel[2]/aSaltel[1],4))
+			oRows1:Cell('Custo'):SetValue(PAGE1->CUSTO) //
+			oRows1:Cell('Custo Total'):SetValue(PAGE1->CUSTOT)
 			oRows1:Printline()
 			nItens++
 			nTItens++
 			nQtdpre  += PAGE1->QTDPRE
 			nQtdrea  += PAGE1->QTDRE
 			nCusto   += PAGE1->CUSTO
-			nCustot  += PAGE1->QTDRE*round(aSalTel[2]/aSaltel[1],4)
+			nCustot  += PAGE1->CUSTOT
 			nTQTDPR  += PAGE1->QTDPRE
 			nTQTDRE  += PAGE1->QTDRE
 			nTCUSTO  += PAGE1->CUSTO
@@ -265,22 +263,15 @@ Static Function PrintReport(oRelatorio)
 		oRows2:Cell('Produtos Usados'):SetValue(PAGE2->B1_COD)
 		oRows2:Cell('Descrição'):SetValue(PAGE2->B1_DESC)
 		oRows2:Cell('UND'):SetValue(PAGE2->B1_UM)
-		oRows2:Cell('QTD'):SetValue(PAGE2->D3_SAIDA)
-		DbSelectArea('SB2')
-		DbSelectArea('SB1')
-		SB2->(DbSetOrder(1))
-		SB1->(DbSetOrder(1))
-		SB2->(DbSeek(cFilAnt+PAGE2->B2_COD+PAGE2->B2_LOCAL))
-		SB1->(DbSeek(xFilial('SB1')+PAGE2->B2_COD))
-		aSalTel := CalcEst(SB2->B2_COD,SB2->B2_LOCAL,MV_PAR06+1)
-
-		oRows2:Cell('Custo Produto'):SetValue(aSalTel[2]/aSaltel[1])
-		oRows2:Cell('Custo Total'):SetValue(PAGE2->D3_SAIDA*(round(aSalTel[2]/aSaltel[1],4)))
+		oRows2:Cell('QTD'):SetValue(PAGE2->QTD)
+		//oRows2:Cell('Custo Produto'):SetValue(PAGE2->CUSTO)
+		oRows2:Cell('Custo Produto'):SetValue(PAGE2->CUSTOT)
+		oRows2:Cell('Custo Total'):SetValue(PAGE2->CUSTOT*PAGE2->QTD)
 		oRows2:Printline()
 		nItens++
-		nQTDPROD += PAGE2->D3_SAIDA
-		nCUSPROD += round(aSalTel[2]/aSaltel[1],4)
-		nCUSTPR  += PAGE2->D3_SAIDA*(round(aSalTel[2]/aSaltel[1],4))
+		nQTDPROD += PAGE2->QTD
+		//nCUSPROD += PAGE2->CUSTO
+		nCUSTPR  += PAGE2->CUSTOT
 		PAGE2->(DbSkip())
 	Enddo
 	oHeader2:Finish()
@@ -290,7 +281,8 @@ Static Function PrintReport(oRelatorio)
 	oTotais2:Cell('Descrição'):SetValue("TOTAL GERAL UTILIZADO:")
 	oTotais2:Cell('UND'):SetValue(CValToChar(nItens))
 	oTotais2:Cell('QTD'):SetValue(nQTDPROD)
-	oTotais2:Cell('Custo Produto'):SetValue(nCUSPROD)
+	//oTotais2:Cell('Custo Produto'):SetValue(nCUSPROD)
+	oTotais2:Cell('Custo Produto'):SetValue(nCUSTPR/nQTDPROD)
 	oTotais2:Cell('Custo Total'):SetValue(nCUSTPR)
 	oTotais2:Printline()
 	oTotais2:Finish()
@@ -299,19 +291,19 @@ Return
 Static Function CriaCab( oRelatorio )
 	Local aArea		:= GetArea()
 	Local aCabec	:= {}
-	Local cChar		:= chr(160)
+	Local cChar		:= chr(160) 
 	local _cEmp 	:= FWCodEmp()
 
 	_DataDe := DToC(MV_PAR05)
 	_DataAte:= DToC(MV_PAR06)
 
 	aCabec := {	"__LOGOEMP__" + "         " + cChar + "         " + RptFolha+TRANSFORM(oRelatorio:Page(),'999999');
-		, Padc(Upper("Espelho de Produção - " + FWFilialName(_cEmp)),132);
-		, Padc("",132);
-		, Padc(UPPER('Período de '+_DataDe+' até '+_DataAte),132);
-		, RptHora + " " + time() ;
-		+ cChar + "         " + RptEmiss + " " + Dtoc(dDataBase)}
-
+			  , Padc(Upper("Espelho de Produção - " + FWFilialName(_cEmp)),132);
+	          , Padc("",132);          
+	          , Padc(UPPER('Período de '+_DataDe+' até '+_DataAte),132);
+	          , RptHora + " " + time() ;
+			  + cChar + "         " + RptEmiss + " " + Dtoc(dDataBase)}
+			  
 	RestArea( aArea )
 
 Return aCabec

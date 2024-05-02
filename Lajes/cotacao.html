@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Solicitaçao de Compras</title>
+    <style>
+        .centered-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 65%;
+            margin-top: 5%;
+
+        }
+
+        .form-container {
+
+
+            width: 100%;
+            padding: 40px;
+            border: 2px solid #4ad627;
+            border-radius: 10px;
+        }
+
+        .Header {
+
+            font-family: Helvetica;
+            font-size: 26px;
+            color: #FFFFFF;
+            font-weight: bold;
+
+        }
+
+        .FontTh {
+
+            font-family: Helvetica;
+            font-size: 12px;
+            color: #FFFFFF;
+            font-weight: bold;
+        }
+
+
+        .Font {
+
+            font-family: Helvetica;
+            font-size: 12px;
+            color: #000000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="centered-content">
+
+        <div class="form-container">
+            <form action="mailto:%WFMailTo%" method="POST" name="FrontPage_Form1"
+                onsubmit="return FrontPage_Form1_Validator(this)">
+                <input type="hidden" name="C1_USER" value="%C1_USER%">
+
+                
+                <table width="100%" height="20" border="0" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <th width="10%">
+                            <img src="https://www.imgur.com/tUpOzpS.png"
+                                width="240px" height="120px" longdesc="Lajes Patagonia">
+                        </th>
+
+                        <th width="39%" align="center" valign="Middle" bgcolor="#187A3D" scope="row">
+                            <H1 class="Header">Preenchimento de Cotacao: %C8_NUM%</H1>
+                        </th>
+                    <tr>
+
+                    </tr>
+
+                    </tr>
+
+                </table>
+                <p class="Font">
+                    %FilAnt%
+                    %Endereco%
+
+                </p>
+                %TotalItens%
+                <table border="3" width="100%" cellspacing="0" cellpadding="10" border-color: #07ac07>
+                    <tr>
+                        <td rowspan="2" width="550" bgcolor="#FFFFFF">
+                            <font size="2" face="Arial">
+                                PREZADO(a). %A2_NOME% &nbsp;%C8_FORNECE% - %A2_COD%<br>
+                                %A2_END%&nbsp;<br>
+                                %A2_BAIRRO% &nbsp; -&nbsp; %A2_MUN%<br>
+                                %A2_TEL%<br>
+                            </font>
+                            <br>
+                            <font size="2" face="Arial">Solicitamos de V. Srs, cotacao de precos para os produtos
+                                discriminados conforme os padroes abaixo estabelecidos:</font>
+                        </td>
+                        <td width="126" bgcolor="#FFFFFF">
+                            <p align="Center">
+                                <font size="3" face="Arial"><b>Condicao de Pagamento:</b> <input type="text" size="4" maxlength="5" name="%CondPg%" value=""></font>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="126" bgcolor="#FFFFFF">
+                            <p align="Center">
+                                <font size="3" face="Arial"><b>Vencimento</b>: %C8_PRAZO%</font>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <table border="3" width="100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td align="center" width="66" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Item</font>
+                        </td>
+
+                        <td align="center" width="66" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Codigo Interno</font>
+                        </td>
+
+                        <td align="center" width="55" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Qtde</font>
+                        </td>
+
+                        <td align="center" width="90" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">UM</font>
+                        </td>
+
+                        <td align="center" width="60" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Descricao</font>
+                        </td>
+
+                        <td align="center" width="90" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Valor Unit R$</font>
+                        </td>
+
+                        <td align="center" width="48" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">IPI%</font>
+                        </td>
+
+                        <td align="center" width="48" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">ICMS%</font>
+                        </td>
+
+                        <!-- <td align="center" width="48" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Vl Total R$</font>
+                        </td> -->
+
+                        <td align="center" width="48" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">NCM - Classe Fiscal</font>
+                        </td>
+
+                     <!--    <td align="center" width="48" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Condicao de Pagamento</font>
+                        </td>
+ -->
+                        <!-- <td align="center" width="48" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Forma de Pagamento</font>
+                        </td> -->
+
+                        <td align="center" width="88" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Prazo de Entrega</font>
+                        </td>
+<!-- 
+                        <td align="center" width="88" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Frete</font>
+                        </td> -->
+
+                        <td align="center" width="88" bgcolor="#187A3D">
+                            <font size="1" Class='FontTh' face="Arial">Obs</font>
+                        </td>
+
+                    </tr>
+
+                    <tr>
+
+                        <td align="center" width="48">
+                            <font size="1" face="Arial">%produto.item%</font>
+                        </td>
+
+                        <td width="66" align="Center">
+                            <font size="1" face="Arial">%produto.codigo% </font>
+                        </td>
+
+                        <td align="center" width="60">
+                            <font size="1" face="Arial">%produto.quant%</font>
+                        </td>
+                        <td align="center" width="60">
+                            <font size="1" face="Arial">%produto.um%</font>
+                        </td>
+
+                        <td align="center" width="60">
+                            <font size="1" face="Arial">%produto.desc%</font>
+                        </td>
+
+                        
+                        <td align="center" width="90">
+                            <input type="text" size="8" maxlength="12" name="%produto.vlrunit%" value="" onkeyup="formatCurrency(this);">
+                        </td>
+                        
+
+                        <td align="center" width="90">
+                            <input type="text" size="5" maxlength="12"  step="0.01"  name="%produto.ipi%" value="" onkeyup="formatCurrencyPC(this);">
+                        </td>
+
+                        <td align="center" width="90">
+                            <input type="text" size="5" maxlength="12" step="0.01" name="%produto.icms%" value="" onkeyup="formatCurrencyPC(this);" >
+                        </td>
+
+                        <!--  <td align="center" width="90">
+                            <input type="text" size="5" maxlength="12" name="%VlTotal%" value="" onkeyup="formatCurrency(this);" >
+                        </td> -->
+
+                        <td align="center" width="88">
+                            <input type="text" size="4" maxlength="5" name="%produto.ncm%" value="">
+                        </td>
+
+                      <!--   <td align="center" width="88">
+                            <input type="text" size="4" maxlength="5" name="%CondPg%" value="">
+                        </td> -->
+<!-- 
+                        <td align="center" width="88">
+                            <input type="text" size="4" maxlength="16" name="%produto.formpg%" value="">
+                        </td> -->
+
+                        <td align="center" width="88">
+                            <input type="text" size="4" maxlength="5" name="%produto.prazo%" value="">
+                        </td>
+                       <!--  <td align="center" width="88">
+                            <input type="text" size="4" maxlength="5" name="%Frete%" value="" onkeyup="formatCurrency(this);">
+                        </td> -->
+
+                        <td align="center" width="88">
+                            <input type="text" size="4" name="%produto.obs%" value="">
+                        </td>
+                    </tr>
+
+                    <script>
+                        function formatCurrency(input) {
+                            // Limpar o valor de entrada de caracteres nao numericos
+                            var value = input.value.replace(/[^\d.]/g, '');
+                    
+                            // Adicionar a mascara decimal
+                            value = value.replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                    
+                            // Adicionar o cifrao
+                            value = 'R$' + value;
+                    
+                            // Atualizar o valor do input
+                            input.value = value;
+                        }
+
+                 
+                        function formatCurrencyPC(input) {
+                            // Limpar o valor de entrada de caracteres nao numericos
+                            var value = input.value.replace(/[^\d.]/g, '');
+                        
+                            // Adicionar a mascara decimal
+                            value = value.replace(/(\d)(?=(\d{3})+\.)/g, '%1,');
+                        
+                            // Adicionar a %
+                            value = '%' + value;
+                        
+                            // Atualizar o valor do input
+                            input.value = value;
+
+                            
+                        }
+                    </script>
+                    
+                   
+
+                   <!-- %Table% -->
+
+                </table>
+                
+                <nbsp> <br></nbsp>
+                <input type="submit" name="B1" value="Enviar">
+                <input type="reset" name="B2" value="Limpar">
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

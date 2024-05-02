@@ -386,7 +386,6 @@ Static Function PrintReport(oRelatorio)
 
 Return
 
-
 	*******************************************************************************
 // Função : CriaCab - Realiza a Montagem do Cabeçalho do Relatório		      |
 // Modulo : Estoque e Custo                                                   |

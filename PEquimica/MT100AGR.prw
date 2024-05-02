@@ -29,15 +29,20 @@ User Function MT100AGR()
 	Local cGrupo   := ""
 	Local cLocal   := ""
 	Local cLote    := ""
-	local cAlias   := GetNextAlias()
 
+	aRet     := RetQtdeD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
+	IF !INCLUI .AND. !ALTERA
+		cGrupo := posicione("sb1",1,xfilial("sb1")+aRet[1],"B1_GRUPO")
+		If Alltrim(cGrupo) == GetMv('MV_XGPBASE',,'002') .AND. Posicione('SF4',1,xFilial('SF4')+SD1->D1_TES,'F4_ESTOQUE') == 'S'
+			U_DelBaseS(SF1->F1_DOC)
+		EndIF
+	EndIf
 	IF INCLUI
 		aRetAp   := RtItensD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
 		cGrupo := posicione("sb1",1,xfilial("sb1")+aretAp[1][1],"B1_GRUPO")
-		If Alltrim(cGrupo) == GetMv('MV_XGPBASE',,'002')
+		If Alltrim(cGrupo) == GetMv('MV_XGPBASE',,'002') .AND. Posicione('SF4',1,xFilial('SF4')+SD1->D1_TES,'F4_ESTOQUE') == 'S'
 			//If SF1->F1_XBASESC == '1'
 			nPesoBR  := SF1->F1_PBRUTO
-			aRet     := RetQtdeD1(SF1->(F1_FILIAL+F1_DOC+F1_SERIE+F1_FORNECE+F1_LOJA))
 			cProduto := aRet[1]
 			cLocal   := aRet[2]
 			cLote    := aRet[4]
@@ -46,21 +51,10 @@ User Function MT100AGR()
 		EndIf
 		//EndIf
 		For i := 1 to len(aRetAp)
-			BeginSql Alias cAlias
-                Select C1_XCMPDIR, C7_XCMPDIR From %Table:SD1% D1
-                INNER JOIN %Table:SC7% C7 On  C7_NUM = D1_PEDIDO AND C7_ITEM = D1_ITEMPC
-                INNER JOIN %Table:SC1% C1 On  C7_NUM = C1_NUM AND C7_ITEM = D1_ITEM
-                WHERE D1.%NotDel% And C7.%NotDel% And C1.%NotDel%
-                And C7_NUM = %Exp:aRetAp[i][4]% AND C7_ITEM = %Exp:aRetAp[i][5]%
-                And D1_COD = %Exp:aRetAp[i][1]% AND D1_LOCAL = %Exp:aRetAp[i][2]%
-			EndSql
-			If (cAlias)->(!Eof())
-				If (cAlias)->C7_XCMPDIR = '1' .OR. (cAlias)->C1_XCMPDIR == '1'
-					U_MovAplica(aRetAp[i][1], aRetAp[i][2], aRetAp[i][3])
-				EndIf
+			If CMPDIR(aRetAp[i])
+				U_MovAplica(aRetAp[i][1], aRetAp[i][2], aRetAp[i][3])
 			EndIf
 		Next
-	(cAlias)->(DbCloseArea())
 	EndiF
 Return
 
@@ -77,6 +71,24 @@ Return
 	Uso		 	|   MT100AGR.prw			                                  	              |
 	-------------------------------------------------------------------------------------------
 /*/
+
+Static Function CMPDIR(aRetAp)
+	Local aArea := GetArea()
+	local		cAlias := GetNextAlias()
+	local lRet := .F.
+	BeginSql Alias cAlias
+    	Select  C7_XCMPDIR From %Table:SD1% D1
+    	INNER JOIN %Table:SC7% C7 On C7_FILIAL = D1_FILIAL AND C7_NUM = D1_PEDIDO AND C7_ITEM = D1_ITEMPC
+    	WHERE D1.%NotDel% And C7.%NotDel% 
+    	And C7_NUM = %Exp:aRetAp[4]% AND C7_ITEM = %Exp:aRetAp[5]%  AND C7_FILIAL = %Exp:SF1->F1_FILIAL%
+    	And D1_COD = %Exp:aRetAp[1]% AND D1_LOCAL = %Exp:aRetAp[2]% 
+	EndSql
+	If (cAlias)->C7_XCMPDIR == '1'
+		lret := .T.
+	EndIf
+	(cAlias)->(DbCloseArea())
+	RestArea(aArea)
+return lRet
 
 Static Function RetQtdeD1(cChave)
 	Local aAreaSF1 := GetArea()

@@ -7,7 +7,7 @@
 /*/{Protheus.doc} StatusPed
  WebService para disponibilização do cadastro de produto
 @author  Cod.erp Tecnologia
-@since   28/09/2023
+@since   28/09/2023 
 @version 1.0  
 /*/
 //-------------------------------------------------------------------

@@ -58,7 +58,7 @@ User Function GetProduto(cCodigo)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
@@ -104,19 +104,24 @@ User Function GetProduto(cCodigo)
 
 	cQuery += "SELECT "
 	cQuery += cCampos+","+cCampos1 
+	cQuery += ", CASE "
+    cQuery +=" WHEN SB1.D_E_L_E_T_ <> '*' THEN 0 "
+    cQuery +=" ELSE 1 "
+    cQuery +="    END AS DELETADO  " 
 	cQuery += "FROM " + RetSqlName("SB1") + " SB1 "
 	cQuery += "INNER JOIN "+ RetSqlName("SB5")+" SB5 "
 	cQuery += "ON B1_COD = B5_COD "
-	cQuery += "WHERE SB1.D_E_L_E_T_ <> '*' "
-	cQuery += "AND SB5.D_E_L_E_T_ <> '*' "
-	cQuery += "AND B1_TIPO = 'PA' "
+	cQuery += "WHERE  "
+	cQuery += " B1_TIPO = 'PA' "
+	cQuery += "AND B1_MSEXP = '' "
 	If !Empty(cCodigo)
 		cQuery += "AND B1_COD = '"+cCodigo+"'
 	EndIf
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+		dbSelectArea('SB1')
+	SB1->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["produto"] := {}
@@ -136,6 +141,12 @@ User Function GetProduto(cCodigo)
 				EndIf
 				&('oLine["'+aNomes1[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 			Next
+			oLine["deletado"] := TMP->DELETADO
+			if SB1->(DbSeek(xFilial('SB1')+TMP->B1_COD))
+				Reclock('SB1',.F.)
+				SB1->B1_MSEXP := DtoS(dDatabase)
+				SB1->(MsUnlock())
+			EndIf
 			AADD(oBody["produto"],oLine)
 			TMP->(DbSkip())
 		EndDo

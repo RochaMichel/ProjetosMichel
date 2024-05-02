@@ -121,7 +121,95 @@
 		},
 		{
 			"label": "U_MsgNota"
+		},
+		{
+			"label": "U_envpedraj"
+		},
+		{
+			"args": [
+				"000012",
+				"000044",
+				".T."
+			],
+			"label": "U_envpedraj"
+		},
+		{
+			"args": [
+				"0001",
+				"0002"
+			],
+			"label": "U_EnvPedraj"
+		},
+		{
+			"args": [
+				"00001",
+				"Erro de item"
+			],
+			"label": "U_EnvPedraj"
+		},
+		{
+			"args": [
+				"311",
+				"00001"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"312",
+				"00002"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"313",
+				"Erro ao criar pedido"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"311",
+				"00002"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"312",
+				"00004"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"311",
+				"0001"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"312",
+				"0002"
+			],
+			"label": "U_ENVPEDraj"
+		},
+		{
+			"args": [
+				"313",
+				""
+			],
+			"label": "U_envpedraj"
+		},
+		{
+			"label": "U_Gettabpreco"
+		},
+		{
+			"label": "U_getvendedores"
 		}
 	],
-	"lastProgramExecuted": "SIGAGFE"
+	"lastProgramExecuted": "U_tetstejson",
+	"lastProgramArguments": []
 }

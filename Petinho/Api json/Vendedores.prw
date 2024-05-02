@@ -63,7 +63,7 @@ User Function GetVendedores(cCodigo)
 	If Select("SX2") == 0
 		RPCClearEnv()
 		RpcSetType( 3 )
-		RpcSetEnv( "01",'020101', , , "",,, , , ,  )
+		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
 
@@ -86,15 +86,21 @@ User Function GetVendedores(cCodigo)
 
 	cQuery += "SELECT "
 	cQuery += cCampos
-	cQuery += "FROM " + RetSqlName("SA3") + " SA3 "
-	cQuery += "WHERE SA3.D_E_L_E_T_ <> '*' "
+	//cQuery += ", CASE "
+    //cQuery +=" WHEN SA3.D_E_L_E_T_ <> '*' THEN 0 "
+    //cQuery +=" ELSE 1 "
+    //cQuery +="    END AS DELETADO  " 
+	cQuery += " FROM " + RetSqlName("SA3") + " SA3 "
+	cQuery += " WHERE SA3.D_E_L_E_T_ <> '*' "
+	//cQuery += " A3_MSEXP = '' "
 	If !Empty(cCodigo)
 		cQuery += "AND A3_COD = '"+cCodigo+"'
 	EndIf
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
-
+	dbSelectArea('SA3')
+	SA3->(dbSetOrder(1))
 	If TMP->(!EOF())
 		TMP->(DBGOTOP())
 		oBody["Vendedores"] := {}
@@ -104,6 +110,12 @@ User Function GetVendedores(cCodigo)
 				xConteudo := &("TMP->"+aCampos[a])
 				&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 			Next
+			//oLine["deletado"] := TMP->DELETADO
+			//if SA3->(DbSeek(xFilial('SA3')+TMP->A3_COD))
+			//	Reclock('SA3',.F.)
+			//	SA3->A3_MSEXP := DtoS(dDatabase)
+			//	SA3->(MsUnlock())
+			//EndIf	
 			AADD(oBody["Vendedores"],oLine)
 			TMP->(DbSkip())
 		EndDo
