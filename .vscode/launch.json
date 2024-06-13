@@ -208,8 +208,14 @@
 		},
 		{
 			"label": "U_getvendedores"
+		},
+		{
+			"label": "sigaadv"
+		},
+		{
+			"label": "U_somarum"
 		}
 	],
-	"lastProgramExecuted": "U_tetstejson",
+	"lastProgramExecuted": "sigacfg",
 	"lastProgramArguments": []
 }

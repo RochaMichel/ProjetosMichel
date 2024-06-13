@@ -37,73 +37,6 @@ WSMethod POST WSSERVICE PEDVENDA
 	Private lAutoErrNoFile := .T.
 	Private lAtivAmb := .F.
 	Private lMSHelpAuto     := .T.
-	
-	//cJson += ' {'
-	//cJson += '    "Pedidos":['
-	//cJson += '       {'
-	//cJson += '          "Pedido":{'
-	//cJson += '             "codigo_venda":"1785",'
-	//cJson += '             "lote":"329",'
-	//cJson += '             "loja_cliente":"0001",'
-	//cJson += '             "tipo_cliente":"R",'
-	//cJson += '             "cpf_cnpj":"06893441000146",'
-	//cJson += '             "codigo_usuario":"0011",'
-	//cJson += '             "data_venda":"25-04-2024",'
-	//cJson += '             "valor":"24036.00",'
-	//cJson += '             "desconto":"1204.00",'
-	//cJson += '             "codigo_cliente":"06893441",'
-	//cJson += '             "codigo_regional":1,'
-	//cJson += '             "tipo_frete":"C",'
-	//cJson += '             "codigo_tabela_preco":"2",'
-	//cJson += '             "status_venda":"0",'
-	//cJson += '             "percentual_comissao_venda":"0",'
-	//cJson += '             "sfa_codigo_condicao_pagamento":"082",'
-	//cJson += '             "tipo_venda":"0",'
-	//cJson += '             "numero_nf":"0",'
-	//cJson += '             "peso_liquido":410,'
-	//cJson += '             "peso_bruto":410,'
-	//cJson += '             "Itens":['
-	//cJson += '                {'
-	//cJson += '                   "produto":"0105000001",'
-	//cJson += '                   "valor_produto":"119.60000000",'
-	//cJson += '                   "unidade_medida":0,'
-	//cJson += '                   "quantidade_produto":"50.0",'
-	//cJson += '                   "valor_total_produto":"5980.00000000",'
-	//cJson += '                   "valor_total_produto_bruto":"5980.00000000",'
-	//cJson += '                   "desconto_perc":"0.0",'
-	//cJson += '                   "desconto_Valor":"5.90",'
-	//cJson += '                   "acrescimo_Valor":"0.00",'
-	//cJson += '                   "codigo_regional":1'
-	//cJson += '                },'
-	//cJson += '                {'
-	//cJson += '                   "produto":"0110000008",'
-	//cJson += '                   "valor_produto":"100.56000000",'
-	//cJson += '                   "unidade_medida":0,'
-	//cJson += '                   "quantidade_produto":"100.0",'
-	//cJson += '                   "valor_total_produto":"10056.00000000",'
-	//cJson += '                   "valor_total_produto_bruto":"10056.00000000",'
-	//cJson += '                   "desconto_perc":"0.0",'
-	//cJson += '                   "desconto_Valor":"5.30",'
-	//cJson += '                   "acrescimo_Valor":"0.00",'
-	//cJson += '                   "codigo_regional":1'
-	//cJson += '                },'
-	//cJson += '                {'
-	//cJson += '                   "produto":"0110000011",'
-	//cJson += '                   "valor_produto":"80.00000000",'
-	//cJson += '                   "unidade_medida":0,'
-	//cJson += '                   "quantidade_produto":"100.0",'
-	//cJson += '                   "valor_total_produto":"8000.00000000",'
-	//cJson += '                   "valor_total_produto_bruto":"8000.00000000",'
-	//cJson += '                   "desconto_perc":"0.0",'
-	//cJson += '                   "desconto_Valor":"3.79",'
-	//cJson += '                   "acrescimo_Valor":"0.00",'
-	//cJson += '                   "codigo_regional":1'
-	//cJson += '                }'
-	//cJson += '             ]'
-	//cJson += '          }'
-	//cJson += '       }'
-	//cJson += '    ]'
-	//cJson += ' }'
 
 	// Prepara o ambiente caso precise
 	If Select("SX2") == 0
@@ -112,7 +45,6 @@ WSMethod POST WSSERVICE PEDVENDA
 		RpcSetEnv( "01",'010101', , , "",,, , , ,  )
 		lAtivAmb := .T. // Seta se precisou montar o ambiente
 	Endif
-	
 
 	FwJsonDeserialize(cJson,@oPedJSON)
 	setFunName('mata410')
@@ -121,7 +53,14 @@ WSMethod POST WSSERVICE PEDVENDA
 	For n := 1 to len(oPedJSON:PEDIDOS)
 		aItens := {}
 		aCabec := {}
-		cNum := GetSXENum('SC5', 'C5_NUM')
+
+		cNum	:= SOMA1(AllTrim(GetMv("MV_XSEQPED")))
+		PutMv("MV_XSEQPED",cNum)
+		SC5->(DbSetOrder(1))
+		While SC5->( DbSeek( AllTrim(GetMv('MV_XFILPD',,'010101'))+cNum ) )
+			cNum := SOMA1(AllTrim(GetMv("MV_XSEQPED")))
+			PutMv("MV_XSEQPED",cNum)
+		Enddo
 
 		If SA1->(MsSeek(xFilial('SA1')+oPedJSON:PEDIDOS[n]:PEDIDO:CODIGO_CLIENTE+oPedJSON:PEDIDOS[n]:PEDIDO:LOJA_CLIENTE))
 			cTipo := SA1->A1_TIPO
@@ -203,20 +142,10 @@ WSMethod POST WSSERVICE PEDVENDA
 		else
 			confirmSX8()
 			U_EnvPedRaj(oPedJSON:PEDIDOS[n]:PEDIDO:CODIGO_VENDA,cNum,.T.)
-			//If len(oPedJSON:PEDIDOS) == n
-			//	cResposta += '{"codigo_raj": '+oPedJSON:PEDIDOS[n]:PEDIDO:CODIGO_VENDA+',"codigo_protheus":"'+cNum+'"}'
-			//else
-			//	cResposta += '{"codigo_raj": '+oPedJSON:PEDIDOS[n]:PEDIDO:CODIGO_VENDA+',"codigo_protheus":"'+cNum+'"},'
-			//EndIf
+
 		EndIF
 	Next n
-	//cResposta += ' ]}'
-	//If !Empty(cTexto)
-	//	::SetResponse(cTexto)
-	//	lRet := .F.
-	//Else
-	//	::SetResponse(cResposta)
-	//EndIF
+
 	FreeObj(oPedJSON)
 	SA1->(DbCloseArea())
 	SC5->(DbCloseArea())
