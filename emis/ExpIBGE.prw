@@ -141,8 +141,6 @@ User Function ExpIBGE()
 	cQueryD += " AND RA_CC IN('61501','61502') AND RA_DEMISSA > '"+cValToChar((Year(dDataBase)-1))+"1231' AND D_E_L_E_T_ = ' '
 	cQueryD += " ) AS SRA ) AS TotAtvD4 ) AS TOT
 
-
-
 	MpSysOpenQuery(cQuery , "ativFun")
 	MpSysOpenQuery(cQueryD, "ativDir")
 
@@ -181,30 +179,36 @@ User Function ExpIBGE()
 	cPorcen += "    ROUND((JuridicaDif.quantidade_Jd * 100.0 / Total.total)) AS porcentagem_Jd "
 	cPorcen += " FROM "
 	cPorcen += "    (SELECT COUNT(*) AS total "
-	cPorcen += "     FROM SD2010 SD2 "
-	cPorcen += "     INNER JOIN SA1010 SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
-	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = 2023 AND SD2.D_E_L_E_T_ = ' ') AS Total, "
+	cPorcen += "     FROM "+RetSqlName("SD2")+" SD2 "
+	cPorcen += "     INNER JOIN "+RetSqlName("SA1")+" SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
+	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = "+cValToChar(YEAR(dDataBase)-1)+" AND SD2.D_E_L_E_T_ = ' ') AS Total, "
 	cPorcen += "    (SELECT COUNT(*) AS quantidade_F "
-	cPorcen += "     FROM SD2010 SD2 "
-	cPorcen += "     INNER JOIN SA1010 SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
-	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = 2023 AND SD2.D_E_L_E_T_ = ' ' AND SA1.A1_PESSOA = 'F') AS Fisica, "
+	cPorcen += "     FROM "+RetSqlName("SD2")+" SD2 "
+	cPorcen += "     INNER JOIN "+RetSqlName("SA1")+" SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
+	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = "+cValToChar(YEAR(dDataBase)-1)+" AND SD2.D_E_L_E_T_ = ' ' AND SA1.A1_PESSOA = 'F') AS Fisica, "
 	cPorcen += "    (SELECT COUNT(*) AS quantidade_J "
-	cPorcen += "     FROM SD2010 SD2 "
-	cPorcen += "     INNER JOIN SA1010 SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
-	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = 2023 AND SD2.D_E_L_E_T_ = ' ' AND SA1.A1_PESSOA = 'J' AND SA1.A1_TPESSOA = ' ') AS Juridica, "
+	cPorcen += "     FROM "+RetSqlName("SD2")+" SD2 "
+	cPorcen += "     INNER JOIN "+RetSqlName("SA1")+" SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
+	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = "+cValToChar(YEAR(dDataBase)-1)+" AND SD2.D_E_L_E_T_ = ' ' AND SA1.A1_PESSOA = 'J' AND SA1.A1_TPESSOA = ' ') AS Juridica, "
 	cPorcen += "    (SELECT COUNT(*) AS quantidade_Jd "
-	cPorcen += "     FROM SD2010 SD2 "
-	cPorcen += "     INNER JOIN SA1010 SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
-	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = 2023 AND SD2.D_E_L_E_T_ = ' ' AND SA1.A1_PESSOA = 'J' AND SA1.A1_TPESSOA <> ' ') AS JuridicaDif; "
+	cPorcen += "     FROM "+RetSqlName("SD2")+" SD2 "
+	cPorcen += "     INNER JOIN "+RetSqlName("SA1")+" SA1 ON SD2.D2_CLIENTE = SA1.A1_COD AND SD2.D2_LOJA = SA1.A1_LOJA "
+	cPorcen += "     WHERE YEAR(SD2.D2_EMISSAO) = "+cValToChar(YEAR(dDataBase)-1)+" AND SD2.D_E_L_E_T_ = ' ' AND SA1.A1_PESSOA = 'J' AND SA1.A1_TPESSOA <> ' ') AS JuridicaDif; "
 
 	MpSysOpenQuery(cPorcen , "QryPorcen")
 
-	cQueryctt := " "
-	cQueryctt += " "
-	cQueryctt += " "
-	cQueryctt += " "
+	cQueryctt := " SELECT Sum(debCan) As debCan, Sum(CredCan) As CredCan FROM ("
+	cQueryctt += " SELECT Floor(Sum(CT2_VALOR)) As debCan, 0 As CredCan FROM "
+	cQueryctt += " "+RetSqlName("CT2")+"  " 
+	cQueryctt += " WHERE D_E_L_E_T_ = ' ' AND CT2_DEBITO = '3.2.1.01.0004' "
+	cQueryctt += " AND YEAR(CT2_DATA) = "+cValToChar(YEAR(dDataBase)-1)+" "
+	cQueryctt += " UNION ALL "
+	cQueryctt := " SELECT 0 As debCan, Floor(Sum(CT2_VALOR)) As CredCan FROM "
+	cQueryctt += " "+RetSqlName("CT2")+"  " 
+	cQueryctt += " WHERE D_E_L_E_T_ = ' ' AND CT2_CREDIT = '3.2.1.01.0004' "
+	cQueryctt += " AND YEAR(CT2_DATA) = "+cValToChar(YEAR(dDataBase)-1)+" ) as tot"
 
-	MpSysOpenQuery(cQueryctt , "sumpagrec")
+	MpSysOpenQuery(cQueryctt , "vendCan")
 
  
 	cDados += cValToChar(valbrut->brutoTot)+";"+cValToChar(valbrut->comisTot)+";0;0;0;0;vendCancel;icmsSObreVend;PISPASEP;outros impostos;"
