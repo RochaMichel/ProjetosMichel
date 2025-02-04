@@ -244,7 +244,7 @@ Static Function fCriaCols()
 	aAdd(aEstrut, { 'Vencim' , 'Vencimento', 'D', 		TamSx3('E2_VENCTO')[1]		, 0, ''})
 	aAdd(aEstrut, { 'Valor'  , 'Valor', 'C', 			TamSx3('E2_VALOR')[1]		, 0, ''})
 	aAdd(aEstrut, { 'Saldo'  , 'Saldo', 'C',			TamSx3('E2_SALDO')[1]		, 0, ''})
-	aAdd(aEstrut, { 'Usuario'  , 'Usuario', 'C', 		TamSx3('E2_USERLGI')[1]		, 0, ''})
+	aAdd(aEstrut, { 'Usuario', 'Usuario', 'C', 		TamSx3('E2_USERLGI')[1]		, 0, ''})
 
 	//Percorrendo todos os campos da estrutura
 	For nAtual := 1 To Len(aEstrut)
