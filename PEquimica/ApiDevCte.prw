@@ -2,22 +2,21 @@
 #include "RESTFUL.ch"
 #Include "topconn.ch"
 #Include "tbiconn.ch"
-
 //-------------------------------------------------------------------
-/*/{Protheus.doc} ApiBxCTe
- WebService para disponibilização do cadastro de produto
+/*/{Protheus.doc} ApiDevCTe
+ WebService para disponibilização devolução de titulos
 @author  Michel Rocha
-@since   28/09/2023
+@since   04/02/2025
 @version 1.0  
 /*/
 //-------------------------------------------------------------------
-WsRestful ApiBxCTe Description "WebService de cliente"
-	WSDATA DATAMOV AS STRING OPTIONAL 
-	WsMethod GET Description "Disponibilização dos cliente" WSSYNTAX "/GET"
+WsRestful ApiDevCTe Description "WebService de devolucao de titulos"
+	WSDATA DATAMOV AS STRING OPTIONAL
+	WsMethod GET Description "Disponibilização das devolucoes de titulos" WSSYNTAX "/GET"
 
 End WsRestful
 
-WSMETHOD GET WSRECEIVE DATAMOV WSSERVICE ApiBxCTe
+WSMETHOD GET WSRECEIVE DATAMOV WSSERVICE ApiDevCTe
 
 
 	Local nPosDTA := aScan(Self:AQueryString, {|x| AllTrim(Upper(x[1])) == "DATAMOV"})
@@ -27,7 +26,7 @@ WSMETHOD GET WSRECEIVE DATAMOV WSSERVICE ApiBxCTe
 	If nPosDTA > 0
 		cDATA := Self:AQueryString[nPosDTA][2]
 	EndIf
-	oBody       := u_GetApiBxCTe(cDATA)
+	oBody       := u_GetApiDevCTe(cDATA)
 	cJson           := oBody:toJson()
 
 	::SetContentType( 'application/json' )
@@ -40,15 +39,15 @@ WSMETHOD GET WSRECEIVE DATAMOV WSSERVICE ApiBxCTe
 Return .T.
 
 //-------------------------------------------------------------------
-/*/{Protheus.doc} GetApiBxCTe
- WebService para disponibilização do cadastro de produto
+/*/{Protheus.doc} GetApiDevCTe
+ WebService para disponibilização devolução de titulos
 @author  Michel Rocha
-@since   28/09/2023
+@since   04/02/2025
 @version 1.0
 /*/
 //-------------------------------------------------------------------
 
-User Function GetApiBxCTe(cDATA)
+User Function GetApiDevCTe(cDATA)
 	Local cQuery      := ""
 	Local cCampos     := ""
 	Local lAtivAmb    := .F.
@@ -79,6 +78,7 @@ User Function GetApiBxCTe(cDATA)
 	AADD(aCampos,"E1_MULTA")//email
 	AADD(aCampos,"E1_DESCONT")//limite_credito
 	AADD(aCampos,"E1_SALDO")//limite_credito
+	AADD(aCampos,"E5_VALOR")//limite_credito
 	
 	//Chave de acesso do CTe
 	//Numero do Titulo
@@ -103,6 +103,7 @@ User Function GetApiBxCTe(cDATA)
 	AADD(aNomes,"multa")
 	AADD(aNomes,"desconto")
 	AADD(aNomes,"saldo")
+	AADD(aNomes,"valor_cancelamento")
 
 
 	For a := 1 To Len(aCampos)
@@ -111,24 +112,27 @@ User Function GetApiBxCTe(cDATA)
 
 	cCampos := SubStr(cCampos, 1, Len(cCampos) - 2) + Space(1)
 
-	cQuery += " SELECT DISTINCT"
+	cQuery += " SELECT "
 	cQuery +=  cCampos
 	cQuery += ", CASE "
 	cQuery +=" WHEN SE1.D_E_L_E_T_ <> '*' THEN 'NAO' "
 	cQuery +=" ELSE 'SIM' "
 	cQuery +="    END AS CANCELADA  "
 	cQuery += " FROM " + RetSqlName("SE1") + " SE1 "
-	cQuery += " INNER JOIN SF2010 SF2 ON F2_FILIAL = E1_FILIAL AND F2_DOC = E1_NUM AND F2_SERIE = E1_PREFIXO  AND F2_CLIENTE = E1_CLIENTE  AND F2_LOJA = E1_LOJA AND F2_EMISSAO = E1_EMISSAO AND SF2.D_E_L_E_T_ ='' "
-	cQuery += " INNER JOIN SD2010 SD2 ON F2_DOC = D2_DOC AND F2_SERIE = D2_SERIE AND F2_CLIENTE = D2_CLIENTE AND F2_LOJA = D2_LOJA "
+	cQuery += " INNER JOIN " + RetSqlName("SF2") + " SF2 ON F2_XCTENUM = E1_XCTENUM AND E1_FILIAL = F2_FILIAL "
+	cQuery += " INNER JOIN " + RetSqlName("SD2") + " SD2 ON F2_FILIAL = D2_FILIAL AND F2_DOC = D2_DOC AND F2_SERIE = D2_SERIE AND F2_CLIENTE = D2_CLIENTE "
+	cQuery += " AND F2_LOJA = D2_LOJA AND F2_CHVNFE <> '' "
+    cQuery += " INNER JOIN " + RetSqlName("SE5") + " SE5 ON E1_PREFIXO = E5_PREFIXO AND E1_NUM = E5_NUMERO AND E1_PARCELA = E5_PARCELA " 
+    cQuery += " AND E5_TIPO = E1_TIPO AND E1_CLIENTE = E5_CLIENTE AND  E1_LOJA = E5_LOJA AND (E5_DTCANBX <> '' OR E5_TIPODOC = 'ES')"
 	cQuery += " WHERE E1_FILIAL LIKE '03%' "
-	cQuery += " AND SF2.F2_CHVNFE <> '' "
 	cQuery += " AND E1_TIPO = 'CTE' "
-	cQuery += " AND E1_SALDO <> E1_VALOR "
-	//cQuery += "AND A1_MSEXP = '' "
+	cQuery += " AND SE1.D_E_L_E_T_ = '' "
+	cQuery += " AND SE5.D_E_L_E_T_ = '' "
+	cQuery += " AND SF2.D_E_L_E_T_ = '' "
+	cQuery += " AND SD2.D_E_L_E_T_ = '' "
 	If !Empty(cDATA)
-		cQuery += " AND E1_BAIXA = '"+cDATA+"'"
+		cQuery += " AND E5_DATA BETWEEN '"+cDATA+"' AND 'ZZZZZZZZ'"
 	EndIf
-
 	cQuery := ChangeQuery(cQuery)
 
 	MpSysOpenQuery(cQuery, "TMP")
@@ -144,7 +148,6 @@ User Function GetApiBxCTe(cDATA)
 				&('oLine["'+aNomes[a]+'"] := '+IIF(ValType(xConteudo) == 'N', cValToChar(xConteudo), '"' + EncodeUtf8(Alltrim(xConteudo)) + '"') )
 			Next
 			oLine["cancelada"] := TMP->CANCELADA
-			oLine["valor_pago"] := ((TMP->E1_VALOR+TMP->E1_JUROS+TMP->E1_MULTA)-TMP->E1_SALDO)-TMP->E1_DESCONT
 			//if SA1->(DbSeek(xFilial('SA1')+TMP->A1_COD+TMP->A1_LOJA))
 			//	Reclock('SA1',.F.)
 			//	SA1->A1_MSEXP := DtoS(dDatabase)
@@ -154,7 +157,7 @@ User Function GetApiBxCTe(cDATA)
 			TMP->(DbSkip())
 		EndDo
 	Else
-		SetRestFault(404,'CTE : "'+cDATA+'",Status: Chave Nao encontrada ',.T.)
+		SetRestFault(404,'CTE : "'+cDATA+'",Status: Data Nao encontrada ',.T.)
 	EndIf
 // Se montou o ambiente, desmonta
 	If lAtivAmb
